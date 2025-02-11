@@ -161,7 +161,6 @@ def main():
 
     # Prepare run name
     run_name = (
-        f"model_name-{args.model_name}_"
         f"task-{args.task_name}_"
         f"lr-{args.learning_rate}_"
         f"epochs-{args.num_train_epochs}_"
@@ -169,6 +168,8 @@ def main():
         f"bsz-{args.batch_size}_"
         f"sch-{args.lr_scheduler_type}"
     )
+
+    wandb.run.name = run_name
 
     # Setup logger
     logging.basicConfig(
