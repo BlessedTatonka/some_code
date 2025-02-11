@@ -239,7 +239,7 @@ def main():
         num_labels=n_labels,
         id2label=id2label,
         label2id=label2id,
-        attn_implementation="sdpa" # To fix randomness
+        #attn_implementation="sdpa" # To fix randomness
     )
     hf_data_collator = DataCollatorWithPadding(tokenizer=hf_tokenizer)
 
@@ -285,14 +285,14 @@ def main():
         save_total_limit=1,
         metric_for_best_model="eval_global_metric",
         fp16=False,
-        bf16=False,
-        bf16_full_eval=False,
+        bf16=True,
+        bf16_full_eval=True,
         push_to_hub=False,
         seed=RANDOM_SEED,
         data_seed=RANDOM_SEED,
         dataloader_num_workers=0,
         warmup_ratio=0.2,
-        report_to=[]
+        report_to='wandb'
     )
 
     # Prepare Trainer

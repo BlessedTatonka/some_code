@@ -2,9 +2,9 @@ name: "RSG"
 method: grid
 metric:
   goal: maximize
-  name: global_metric
+  name: eval/global_metric
 parameters:
-  model_name: 
+  model_name:
     value: "deepvk/moderna-small"
   model_revision:
     value: "stage_3__50B_tok"
