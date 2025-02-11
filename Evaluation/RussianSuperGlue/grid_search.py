@@ -23,7 +23,7 @@ def main():
         lr_scheduler_type
     )
     
-    # Iterate over each combination and run train_no_wandb.py
+    # Iterate over each combination and run train.py
     for (task, lr, wd, bsz, epochs, sch) in grid:
         cmd = [
             "python", "train.py",
