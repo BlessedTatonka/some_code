@@ -10,21 +10,26 @@ parameters:
     value: "stage_3__50B_tok"
   learning_rate:
     distribution: categorical
-    values: [2e-5, 5e-5, 1e-4]
+    # values: [2e-5, 5e-5, 1e-4]
+    values: [2e-5]
   weight_decay:
     distribution: categorical
-    values: [0, 1e-2, 1e-1]
+    values: [1e-2]
+    # values: [0, 1e-2, 1e-1]
   batch_size:
     distribution: categorical
-    values: [8, 16, 32, 64]
+    values: [8]
+    # values: [8, 16, 32, 64]
   num_train_epochs:
     distribution: categorical
-    values: [2, 3, 5, 10]
+    values: [10]
+    # values: [2, 3, 5, 10]
   lr_scheduler_type:
     distribution: categorical
     values: ['cosine', 'inverse_sqrt']
   task_name:
-    values: ['rcb', 'parus', 'muserc', 'terra', 'russe', 'rwsd', 'danetqa']
+    values: ['rcb']
+    #values: ['rcb', 'parus', 'muserc', 'terra', 'russe', 'rwsd', 'danetqa']
 command:
   - python3
   - train_sweeps.py

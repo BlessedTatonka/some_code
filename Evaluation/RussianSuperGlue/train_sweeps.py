@@ -234,14 +234,25 @@ def main():
 
     logging.info("Loading tokenizer and model...")
     hf_tokenizer = AutoTokenizer.from_pretrained(model_name)
-    hf_model = AutoModelForSequenceClassification.from_pretrained(
-        model_name,
-        revision=model_revision,
-        num_labels=n_labels,
-        id2label=id2label,
-        label2id=label2id,
-        #attn_implementation="sdpa" # To fix randomness
-    )
+    # hf_model = AutoModelForSequenceClassification.from_pretrained(
+    #     model_name,
+    #     revision=model_revision,
+    #     num_labels=n_labels,
+    #     id2label=id2label,
+    #     label2id=label2id,
+    #     #attn_implementation="sdpa" # To fix randomness
+    # )
+    
+    def model_init():
+        return AutoModelForSequenceClassification.from_pretrained(
+            model_name,
+            revision=model_revision,
+            num_labels=n_labels,
+            id2label=id2label,
+            label2id=label2id,
+            # attn_implementation="sdpa"  # Uncomment if needed for determinism
+        )
+    
     hf_data_collator = DataCollatorWithPadding(tokenizer=hf_tokenizer)
 
     # If you need to do custom tokenization, define a preprocessing function
@@ -298,7 +309,8 @@ def main():
 
     # Prepare Trainer
     trainer = Trainer(
-        model=hf_model,
+        # model=hf_model,
+        model_init=model_init,
         args=training_args,
         train_dataset=tokenized_datasets[train_ds_name],
         eval_dataset=tokenized_datasets[valid_ds_name],
