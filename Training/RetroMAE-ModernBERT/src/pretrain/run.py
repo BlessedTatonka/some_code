@@ -17,8 +17,9 @@ from transformers import (
 from transformers.trainer_utils import is_main_process
 
 from .arguments import DataTrainingArguments, ModelArguments
-from .data import DatasetForPretraining, RetroMAECollator
+from .data import DatasetForPretraining, RetroMAECollator, DupMAECollator
 from .modeling import RetroMAEForPretraining
+from .modeling_duplex import DupMAEForPretraining
 from .trainer import PreTrainer
 
 logger = logging.getLogger(__name__)
@@ -86,9 +87,13 @@ def main():
 
     set_seed(training_args.seed)
 
-    model_class = RetroMAEForPretraining
-    collator_class = RetroMAECollator
-
+    if model_args.pretrain_method == 'retromae':
+        model_class = RetroMAEForPretraining
+        collator_class = RetroMAECollator
+    elif model_args.pretrain_method == 'dupmae':
+        model_class = DupMAEForPretraining
+        collator_class = DupMAECollator
+        
     if model_args.model_name_or_path:
         model = model_class.from_pretrained(model_args, model_args.model_name_or_path, revision=model_args.model_revision)
         logger.info(f"------Load model from {model_args.model_name_or_path}------")

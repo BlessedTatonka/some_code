@@ -35,7 +35,7 @@ class RetroMAEForPretraining(nn.Module):
         self.lm.gradient_checkpointing_enable(**kwargs)
 
     def forward(self,
-                encoder_input_ids, encoder_attention_mask, encoder_labels,
+                encoder_input_ids, input_ids_length, encoder_attention_mask, encoder_labels,
                 decoder_input_ids, decoder_attention_mask, decoder_labels):
 
         lm_out: MaskedLMOutput = self.lm(
@@ -44,24 +44,36 @@ class RetroMAEForPretraining(nn.Module):
             output_hidden_states=True,
             return_dict=True
         )
-        # cls_hiddens = lm_out.hidden_states[-1][:, :1]  # B 1 D
-        # decoder_embedding_output = self.decoder_embeddings(input_ids=decoder_input_ids)
-        # hiddens = torch.cat([cls_hiddens, decoder_embedding_output[:, 1:]], dim=1)
+        
+        all_hiddens = lm_out.hidden_states[-1]
+    
+        batch_size  = encoder_input_ids.size(0)
+        max_len     = encoder_input_ids.size(1)
+        hidden_size = all_hiddens.size(-1)
 
-        # Changing to mean hiddens
-        mean_hiddens = lm_out.hidden_states[-1]
-        mean_hiddens = mean_hiddens.view((encoder_input_ids.shape[0], encoder_input_ids.shape[1], mean_hiddens.shape[1]))
-        mean_hiddens = mean_hiddens.mean(dim=1).unsqueeze(1)
+        padded_hiddens = all_hiddens.new_zeros((batch_size, max_len, hidden_size))
+        
+        offset = 0
+        for i in range(batch_size):
+            length = int(input_ids_length[i])  # number of valid tokens
+            padded_hiddens[i, :length, :] = all_hiddens[offset:offset + length]
+            offset += length
+        
+        def average_pool(last_hidden_states, attention_mask) :
+            masked_hidden = last_hidden_states.masked_fill(~attention_mask[..., None].bool(), 0.0)
+            sum_hidden = masked_hidden.sum(dim=1)
+            valid_counts = attention_mask.sum(dim=1, keepdim=True)
+
+            return sum_hidden / valid_counts
+    
+        mean_hiddens_per_example = average_pool(padded_hiddens, encoder_attention_mask)
+        mean_hiddens = mean_hiddens_per_example.unsqueeze(1)
         decoder_embedding_output = self.decoder_embeddings(input_ids=decoder_input_ids)
         hiddens = torch.cat([mean_hiddens, decoder_embedding_output[:, 1:]], dim=1)
-
-        # decoder_position_ids = self.lm.model.embeddings.position_ids[:, :decoder_input_ids.size(1)]
-        # decoder_position_embeddings = self.lm.bert.embeddings.position_embeddings(decoder_position_ids)  # B L D
-        # query = decoder_position_embeddings + cls_hiddens
-
-        mean_hiddens = mean_hiddens.expand(hiddens.size(0), hiddens.size(1), hiddens.size(2))
-        query = self.decoder_embeddings(inputs_embeds=mean_hiddens)
-
+        
+        mean_expanded = mean_hiddens.expand(hiddens.size(0), hiddens.size(1), hiddens.size(2))
+        query = self.decoder_embeddings(inputs_embeds=mean_expanded)
+        
         matrix_attention_mask = self.lm.get_extended_attention_mask(
             decoder_attention_mask,
             decoder_attention_mask.shape,

@@ -120,6 +120,7 @@ class RetroMAECollator(DataCollatorForWholeWordMask):
 
     def __call__(self, examples):
         input_ids_batch = []
+        input_ids_length = []
         attention_mask_batch = []
         encoder_mlm_mask_batch = []
         decoder_labels_batch = []
@@ -127,8 +128,9 @@ class RetroMAECollator(DataCollatorForWholeWordMask):
 
         for e in examples:
 
-            e_trunc = self.tokenizer.encode(e, max_length=self.max_seq_length, truncation=True, padding='max_length',)
+            e_trunc = self.tokenizer.encode(e, max_length=self.max_seq_length, truncation=True)
             tokens = [self.tokenizer._convert_id_to_token(tid) for tid in e_trunc]
+            input_ids_length.append(len(tokens))
 
             self.mlm_probability = self.encoder_mlm_probability
             text_encoder_mlm_mask = self._whole_word_mask(tokens)
@@ -155,6 +157,7 @@ class RetroMAECollator(DataCollatorForWholeWordMask):
             decoder_matrix_attention_mask_batch.append(1 - torch.tensor(text_matrix_attention_mask))
 
         input_ids_batch = tensorize_batch(input_ids_batch, self.tokenizer.pad_token_id)
+        input_ids_length = torch.tensor(input_ids_length)
         attention_mask_batch = tensorize_batch(attention_mask_batch, 0)
         origin_input_ids_batch = input_ids_batch.clone()
         encoder_mlm_mask_batch = tensorize_batch(encoder_mlm_mask_batch, 0)
@@ -164,6 +167,7 @@ class RetroMAECollator(DataCollatorForWholeWordMask):
 
         batch = {
             "encoder_input_ids": encoder_input_ids_batch,
+            "input_ids_length": input_ids_length,
             "encoder_attention_mask": attention_mask_batch,
             "encoder_labels": encoder_labels_batch,
             "decoder_input_ids": origin_input_ids_batch,
@@ -181,17 +185,19 @@ class DupMAECollator(DataCollatorForWholeWordMask):
 
     def __call__(self, examples):
         input_ids_batch = []
+        input_ids_length = []
         attention_mask_batch = []
         encoder_mlm_mask_batch = []
         decoder_labels_batch = []
         decoder_matrix_attention_mask_batch = []
         bag_word_weight = []
 
-        tgt_len = self.max_seq_length - self.tokenizer.num_special_tokens_to_add(False)
+        tgt_len = int(self.max_seq_length - self.tokenizer.num_special_tokens_to_add(False))
 
         for e in examples:
-            e_trunc = self.tokenizer.encode(e, max_length=self.max_seq_length, truncation=True, padding='max_length')
+            e_trunc = self.tokenizer.encode(e, max_length=self.max_seq_length, truncation=True)
             tokens = [self.tokenizer._convert_id_to_token(tid) for tid in e_trunc]
+            input_ids_length.append(len(tokens))
 
             self.mlm_probability = self.encoder_mlm_probability
             text_encoder_mlm_mask = self._whole_word_mask(tokens)
@@ -217,12 +223,14 @@ class DupMAECollator(DataCollatorForWholeWordMask):
             encoder_mlm_mask_batch.append(torch.tensor(text_encoder_mlm_mask))
             decoder_matrix_attention_mask_batch.append(1 - torch.tensor(text_matrix_attention_mask))
 
-            weight = torch.zeros(size=(self.tokenizer.vocab_size,))
-            for t in e['token_ids'][:tgt_len]:
-                weight[t] = 1 / len(e['token_ids'][:tgt_len])
+            # weight = torch.zeros(size=(self.tokenizer.vocab_size,))
+            weight = torch.zeros(size=(50368,))
+            for t in e_trunc[:tgt_len]:
+                weight[t] = 1 / len(e_trunc[:tgt_len])
             bag_word_weight.append(weight.unsqueeze(0))
 
         input_ids_batch = tensorize_batch(input_ids_batch, self.tokenizer.pad_token_id)
+        input_ids_length = torch.tensor(input_ids_length)
         attention_mask_batch = tensorize_batch(attention_mask_batch, 0)
         origin_input_ids_batch = input_ids_batch.clone()
         encoder_mlm_mask_batch = tensorize_batch(encoder_mlm_mask_batch, 0)
@@ -233,6 +241,7 @@ class DupMAECollator(DataCollatorForWholeWordMask):
 
         batch = {
             "encoder_input_ids": encoder_input_ids_batch,
+            "input_ids_length": input_ids_length,
             "encoder_attention_mask": attention_mask_batch,
             "encoder_labels": encoder_labels_batch,
             "decoder_input_ids": origin_input_ids_batch,

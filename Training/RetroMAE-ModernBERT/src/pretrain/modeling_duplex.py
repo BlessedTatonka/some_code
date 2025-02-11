@@ -77,7 +77,7 @@ class DupMAEForPretraining(nn.Module):
         return bow_loss
 
     def forward(self,
-                encoder_input_ids, encoder_attention_mask, encoder_labels,
+                encoder_input_ids, input_ids_length, encoder_attention_mask, encoder_labels,
                 decoder_input_ids, decoder_attention_mask, decoder_labels,
                 bag_word_weight):
         
@@ -88,10 +88,29 @@ class DupMAEForPretraining(nn.Module):
             return_dict=True
         )
 
-        # Changing to mean hiddens
-        mean_hiddens = lm_out.hidden_states[-1]
-        mean_hiddens = mean_hiddens.view((encoder_input_ids.shape[0], encoder_input_ids.shape[1], mean_hiddens.shape[1]))
-        mean_hiddens = mean_hiddens.mean(dim=1).unsqueeze(1)
+        all_hiddens = lm_out.hidden_states[-1]
+    
+        batch_size  = encoder_input_ids.size(0)
+        max_len     = encoder_input_ids.size(1)
+        hidden_size = all_hiddens.size(-1)
+
+        padded_hiddens = all_hiddens.new_zeros((batch_size, max_len, hidden_size))
+        
+        offset = 0
+        for i in range(batch_size):
+            length = int(input_ids_length[i])  # number of valid tokens
+            padded_hiddens[i, :length, :] = all_hiddens[offset:offset + length]
+            offset += length
+        
+        def average_pool(last_hidden_states, attention_mask) :
+            masked_hidden = last_hidden_states.masked_fill(~attention_mask[..., None].bool(), 0.0)
+            sum_hidden = masked_hidden.sum(dim=1)
+            valid_counts = attention_mask.sum(dim=1, keepdim=True)
+
+            return sum_hidden / valid_counts
+    
+        mean_hiddens_per_example = average_pool(padded_hiddens, encoder_attention_mask)
+        mean_hiddens = mean_hiddens_per_example.unsqueeze(1)
 
         mlm_loss = self.decoder_mlm_loss(mean_hiddens, decoder_input_ids, decoder_attention_mask, decoder_labels)
 
