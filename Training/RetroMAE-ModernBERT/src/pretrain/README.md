@@ -2,8 +2,10 @@
 
 ## Key points:
 - This code uses *mean* pooling;
-- *learning_rate* and *mlm_probability* are taken from original paper;
+- *learning_rate* and *mlm_probability* are taken from the original paper;
 - deepseed config can be used, ex. ds_config.json.
+
+## Example script
 
 ```bash
 torchrun --nproc_per_node 8 -m run \
