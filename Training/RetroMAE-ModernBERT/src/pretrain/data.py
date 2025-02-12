@@ -14,7 +14,7 @@ from .utils import tensorize_batch
 
 @dataclass
 class DataCollatorForWholeWordMask(DataCollatorForLanguageModeling):
-    max_seq_length: int = 512
+    max_seq_length: int = 8192
     encoder_mlm_probability: float = 0.15
     decoder_mlm_probability: float = 0.15
 
@@ -29,11 +29,11 @@ class DataCollatorForWholeWordMask(DataCollatorForLanguageModeling):
     Adapted from a PhoBERT example.
     """
 
-    max_seq_length: int = 512
+    max_seq_length: int = 8192
     encoder_mlm_probability: float = 0.15
     decoder_mlm_probability: float = 0.15
 
-    def _whole_word_mask(self, input_tokens: List[str], max_predictions=512):
+    def _whole_word_mask(self, input_tokens: List[str], max_predictions=8192):
         """
         Get 0/1 labels for masked tokens with whole word mask proxy
         """
@@ -114,7 +114,7 @@ class DatasetForPretraining(torch.utils.data.Dataset):
 
 @dataclass
 class RetroMAECollator(DataCollatorForWholeWordMask):
-    max_seq_length: int = 512
+    max_seq_length: int = 8192
     encoder_mlm_probability: float = 0.15
     decoder_mlm_probability: float = 0.15
 
@@ -133,7 +133,7 @@ class RetroMAECollator(DataCollatorForWholeWordMask):
             input_ids_length.append(len(tokens))
 
             self.mlm_probability = self.encoder_mlm_probability
-            text_encoder_mlm_mask = self._whole_word_mask(tokens)
+            text_encoder_mlm_mask = self._whole_word_mask(tokens, max_predictions=self.max_seq_length)
 
             self.mlm_probability = self.decoder_mlm_probability
             mask_set = []
@@ -179,7 +179,7 @@ class RetroMAECollator(DataCollatorForWholeWordMask):
 
 @dataclass
 class DupMAECollator(DataCollatorForWholeWordMask):
-    max_seq_length: int = 512
+    max_seq_length: int = 8192
     encoder_mlm_probability: float = 0.15
     decoder_mlm_probability: float = 0.15
 
@@ -200,7 +200,7 @@ class DupMAECollator(DataCollatorForWholeWordMask):
             input_ids_length.append(len(tokens))
 
             self.mlm_probability = self.encoder_mlm_probability
-            text_encoder_mlm_mask = self._whole_word_mask(tokens)
+            text_encoder_mlm_mask = self._whole_word_mask(tokens, max_predictions=self.max_seq_length)
 
             self.mlm_probability = self.decoder_mlm_probability
             mask_set = []
@@ -224,6 +224,7 @@ class DupMAECollator(DataCollatorForWholeWordMask):
             decoder_matrix_attention_mask_batch.append(1 - torch.tensor(text_matrix_attention_mask))
 
             # weight = torch.zeros(size=(self.tokenizer.vocab_size,))
+            ## TODO
             weight = torch.zeros(size=(50368,))
             for t in e_trunc[:tgt_len]:
                 weight[t] = 1 / len(e_trunc[:tgt_len])
