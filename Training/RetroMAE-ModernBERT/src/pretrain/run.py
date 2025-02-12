@@ -107,8 +107,11 @@ def main():
     else:
         raise ValueError("You must provide the model_name_or_path or config_name")
 
-    dataset = DatasetForPretraining(data_args.train_data)
-
+    train_dataset = DatasetForPretraining(data_args.train_data)
+    eval_dataset = None
+    if data_args.eval_data is not None:
+        eval_dataset = DatasetForPretraining(data_args.eval_data)
+            
     data_collator = collator_class(tokenizer,
                                    encoder_mlm_probability=data_args.encoder_mlm_probability,
                                    decoder_mlm_probability=data_args.decoder_mlm_probability,
@@ -118,7 +121,8 @@ def main():
     trainer = PreTrainer(
         model=model,
         args=training_args,
-        train_dataset=dataset,
+        train_dataset=train_dataset,
+        eval_dataset=eval_dataset,
         data_collator=data_collator,
         tokenizer=tokenizer
     )
@@ -126,8 +130,9 @@ def main():
 
     # # Training
     trainer.train(resume_from_checkpoint=training_args.resume_from_checkpoint)
-    trainer.save_model()  # Saves the tokenizer too for easy upload
+    trainer.save_model()
 
+    logger.info("Training complete.")
 
 if __name__ == "__main__":
     main()

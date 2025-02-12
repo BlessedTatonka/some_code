@@ -7,6 +7,9 @@ class DataTrainingArguments:
     train_data: Optional[str] = field(
         default=None, metadata={"help": "Path to pretrain data"}
     )
+    eval_data: Optional[str] = field(
+        default=None, metadata={"help": "Path to evaluation data"}
+    )
     tokenizer_name: Optional[str] = field(
         default=None, metadata={"help": "Pretrained tokenizer name or path if not the same as model_name"}
     )
