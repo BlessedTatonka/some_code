@@ -32,5 +32,7 @@ torchrun --nproc_per_node 8 -m run \
     --encoder_mlm_probability 0.3 \
     --decoder_mlm_probability 0.5 \
     --dataloader_drop_last True \
-    --per_device_train_batch_size 32
+    --per_device_train_batch_size 32 \
+    --bf16 True \
+    --bf16_full_eval True
 ```
