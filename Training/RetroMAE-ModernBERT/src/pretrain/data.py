@@ -14,7 +14,7 @@ from .utils import tensorize_batch
 
 @dataclass
 class DataCollatorForWholeWordMask(DataCollatorForLanguageModeling):
-    max_seq_length: int = 8192
+    max_seq_length: int = 512
     encoder_mlm_probability: float = 0.15
     decoder_mlm_probability: float = 0.15
 
@@ -29,11 +29,11 @@ class DataCollatorForWholeWordMask(DataCollatorForLanguageModeling):
     Adapted from a PhoBERT example.
     """
 
-    max_seq_length: int = 8192
+    max_seq_length: int = 512
     encoder_mlm_probability: float = 0.15
     decoder_mlm_probability: float = 0.15
 
-    def _whole_word_mask(self, input_tokens: List[str], max_predictions=8192):
+    def _whole_word_mask(self, input_tokens: List[str], max_predictions=512):
         """
         Get 0/1 labels for masked tokens with whole word mask proxy
         """
@@ -114,7 +114,7 @@ class DatasetForPretraining(torch.utils.data.Dataset):
 
 @dataclass
 class RetroMAECollator(DataCollatorForWholeWordMask):
-    max_seq_length: int = 8192
+    max_seq_length: int = 512
     encoder_mlm_probability: float = 0.15
     decoder_mlm_probability: float = 0.15
 
@@ -179,7 +179,7 @@ class RetroMAECollator(DataCollatorForWholeWordMask):
 
 @dataclass
 class DupMAECollator(DataCollatorForWholeWordMask):
-    max_seq_length: int = 8192
+    max_seq_length: int = 512
     encoder_mlm_probability: float = 0.15
     decoder_mlm_probability: float = 0.15
 
