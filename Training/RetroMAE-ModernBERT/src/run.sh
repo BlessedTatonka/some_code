@@ -16,8 +16,8 @@ torchrun --nproc_per_node 1 -m pretrain.run \
     --logging_steps 10 \
     --dataloader_num_workers 16 \
     --report_to wandb \
-    --warmup_ratio 0.02 \
-    --weight_decay 0.001 \
+    --warmup_ratio 0.1 \
+    --weight_decay 0.01 \
     --lr_scheduler_type inverse_sqrt \
     --encoder_mlm_probability 0.3 \
     --decoder_mlm_probability 0.5 \
