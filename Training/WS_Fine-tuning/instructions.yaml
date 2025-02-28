@@ -1,0 +1,7 @@
+default_prompt_name: "query"
+ru_hnp:
+  anchor: "find_query: "
+  positive: "find_query: "
+summaries:
+  anchor: "find_passage: "
+  positive: "find_query: "
