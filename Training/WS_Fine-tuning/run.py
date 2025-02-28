@@ -123,7 +123,7 @@ def main():
     # Loss
     train_loss = losses.CachedMultipleNegativesSymmetricRankingLoss(
         model,
-        scale=100, # opposite to temperature, which should be 0.01
+        scale=50, # opposite to temperature, which should be 0.02
         mini_batch_size=model_args.mini_batch_size
     )
 
