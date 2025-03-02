@@ -15,27 +15,9 @@ from sentence_transformers.training_args import SentenceTransformerTrainingArgum
 from arguments import DataTrainingArguments, ModelArguments
 from data import load_multiple_datasets
 from evaluation import ir_evaluate, sts_evaluate
-
+import InfoNCE_no_temp
 
 logger = logging.getLogger(__name__)
-
-
-TRAIN_DATASETS = [
-    {
-        "dataset_path": "Jarikoff/unsup_data__ai-bond__ru-alpaca-summ",
-        "query_prefix": "find_passage: ",
-        "passage_prefix": "find_query: ",
-        "pretty_name": "alpaca"
-    },
-    {
-        "dataset_path": "Jarikoff/unsup_data__andidu__paraphrase-ru-reviews",
-        "query_prefix": "find_paraphrase: ",
-        "passage_prefix": "find_paraphrase: ",
-        "pretty_name": "ru-reviews"
-    }
-]
-
-EVAL_DATASETS = None
 
 
 def main():
@@ -119,11 +101,13 @@ def main():
         training_args.prompts = prompts
 
     # Loss
-    train_loss = losses.CachedMultipleNegativesSymmetricRankingLoss(
+    base_loss = losses.CachedMultipleNegativesRankingLoss(
         model,
         scale=50, # opposite to temperature, which should be 0.02
         mini_batch_size=model_args.mini_batch_size
     )
+    
+    train_loss = losses.MatryoshkaLoss(model, base_loss, [384, 256, 128, 64, 32])
 
     # Trainer
     trainer = SentenceTransformerTrainer(
