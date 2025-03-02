@@ -115,10 +115,8 @@ def main():
     if use_instructions:
         with open(data_args.instructions_path, 'r') as file:
             prompts = yaml.safe_load(file)
-            print(prompts)
-        
-        
-    training_args.prompts = prompts
+            #print(prompts)
+        training_args.prompts = prompts
 
     # Loss
     train_loss = losses.CachedMultipleNegativesSymmetricRankingLoss(
