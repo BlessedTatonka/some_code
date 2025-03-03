@@ -15,7 +15,6 @@ from sentence_transformers.training_args import SentenceTransformerTrainingArgum
 from arguments import DataTrainingArguments, ModelArguments
 from data import load_multiple_datasets
 from evaluation import ir_evaluate, sts_evaluate
-import InfoNCE_no_temp
 
 logger = logging.getLogger(__name__)
 
