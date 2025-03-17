@@ -121,8 +121,6 @@ def load_from_mixture_configuration(data_path: str, configuration: list[tuple[st
 
 if __name__ == "__main__":
     from argparse import ArgumentParser
-
-    from datasets import Features, IterableDataset, Value
     from yaml import safe_load
 
     _arg_parser = ArgumentParser()

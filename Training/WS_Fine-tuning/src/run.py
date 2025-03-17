@@ -5,12 +5,8 @@ from datetime import datetime
 import loguru
 import torch
 import transformers
-import wandb
 import yaml
-from arguments import DataTrainingArguments, ModelArguments
-from data import load_from_mixture_configuration, load_multiple_datasets
 from datasets import Features, IterableDataset, Value
-from evaluation import ir_evaluate, sts_evaluate
 from sentence_transformers import SentenceTransformer, losses
 from sentence_transformers.trainer import SentenceTransformerTrainer
 from sentence_transformers.training_args import (
@@ -20,6 +16,11 @@ from sentence_transformers.training_args import (
 )
 from transformers import HfArgumentParser, set_seed
 from transformers.trainer_utils import is_main_process
+
+import wandb
+from arguments import DataTrainingArguments, ModelArguments
+from data import load_from_mixture_configuration, load_multiple_datasets
+from evaluation import ir_evaluate, sts_evaluate
 
 logger = logging.getLogger(__name__)
 
