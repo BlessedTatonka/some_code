@@ -5,15 +5,15 @@ import argparse
 import logging
 import os
 import random
+from functools import partial
 
 import numpy as np
 import torch
 from datasets import load_dataset
-from functools import partial
 from sklearn.metrics import accuracy_score, f1_score
 from transformers import (
-    AutoTokenizer,
     AutoModelForSequenceClassification,
+    AutoTokenizer,
     DataCollatorWithPadding,
     Trainer,
     TrainingArguments,
@@ -96,6 +96,7 @@ russian_superglue_tasks = {
     },
 }
 
+
 # ----------------------
 # 2. Seed fix function
 # ----------------------
@@ -114,6 +115,7 @@ def fix_seed(random_seed=42):
     torch.use_deterministic_algorithms(True)
     os.environ["CUBLAS_WORKSPACE_CONFIG"] = ":4096:8"
 
+
 # ----------------------
 # 3. Compute metrics
 # ----------------------
@@ -131,6 +133,7 @@ def compute_metrics(eval_pred, task_metrics):
         metrics_d[metric_name] = score
     return metrics_d
 
+
 # ----------------------
 # 4. Tokenizer function
 # ----------------------
@@ -139,13 +142,11 @@ def preprocess_function(examples, task_inputs, hf_tokenizer):
     Joins task inputs with a [SEP] token, then tokenizes.
     """
     input_sequences = zip(*[examples[inp] for inp in task_inputs])
-    texts = [
-        hf_tokenizer.sep_token.join(parts)
-        for parts in input_sequences
-    ]
+    texts = [hf_tokenizer.sep_token.join(parts) for parts in input_sequences]
     # Adjust truncation or max_length as needed
     tokenized = hf_tokenizer(texts, truncation=False)
     return tokenized
+
 
 # ----------------------
 # 5. Main eval script
@@ -153,17 +154,17 @@ def preprocess_function(examples, task_inputs, hf_tokenizer):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--model_path", 
-        type=str, 
+        "--model_path",
+        type=str,
         required=True,
-        help="Path or huggingface.co model ID from which to load the finetuned model."
+        help="Path or huggingface.co model ID from which to load the finetuned model.",
     )
     parser.add_argument(
-        "--task_name", 
-        type=str, 
+        "--task_name",
+        type=str,
         choices=list(russian_superglue_tasks.keys()),
         required=True,
-        help="Russian SuperGLUE task to evaluate. E.g. `rcb`, `parus`, etc."
+        help="Russian SuperGLUE task to evaluate. E.g. `rcb`, `parus`, etc.",
     )
     args = parser.parse_args()
 
@@ -176,7 +177,7 @@ def main():
         datefmt="%Y-%m-%d %H:%M:%S",
         level=logging.INFO,
     )
-    
+
     logging.info(f"Evaluating task '{args.task_name}' using model '{args.model_path}' ...")
 
     # 1) Load the task metadata
@@ -195,8 +196,7 @@ def main():
     # 4) Tokenize datasets
     logging.info("Tokenizing validation split ...")
     tokenized_datasets = raw_datasets.map(
-        lambda batch: preprocess_function(batch, task_meta["inputs"], tokenizer),
-        batched=True
+        lambda batch: preprocess_function(batch, task_meta["inputs"], tokenizer), batched=True
     )
 
     # 5) Load model
@@ -211,7 +211,7 @@ def main():
         do_train=False,
         do_eval=True,
         logging_steps=50,
-        report_to=None
+        report_to=None,
     )
 
     trainer = Trainer(
@@ -235,8 +235,10 @@ def main():
     # By default, we'll check if we have an "eval_accuracy_score" or "eval_f1_score" etc.
     # Typically, there's exactly one custom metric in `eval_results` besides `eval_loss`.
     custom_metrics = {
-        key: val for key, val in eval_results.items() 
-        if key.startswith("eval_") and key not in ["eval_loss", "eval_runtime", "eval_samples_per_second", "eval_steps_per_second"]
+        key: val
+        for key, val in eval_results.items()
+        if key.startswith("eval_")
+        and key not in ["eval_loss", "eval_runtime", "eval_samples_per_second", "eval_steps_per_second"]
     }
 
     # If there's only one, we can treat it as the global metric:
@@ -246,10 +248,11 @@ def main():
     elif len(custom_metrics) > 1:
         # If there's more than one, pick the first or handle as needed
         logging.warning("Multiple metrics found. Printing them all:")
-        for k,v in custom_metrics.items():
+        for k, v in custom_metrics.items():
             print(f"{k}: {v:.4f}")
     else:
         logging.warning("No custom global metric found (other than loss).")
+
 
 if __name__ == "__main__":
     main()

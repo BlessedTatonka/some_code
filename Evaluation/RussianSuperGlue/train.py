@@ -1,26 +1,25 @@
-import random
-import numpy as np
-import torch
-from transformers import set_seed
-import pandas as pd
-from functools import partial
-import gc
-import os
 import argparse
+import gc
 import logging
+import os
+import random
+from functools import partial
 
+import numpy as np
+import pandas as pd
+import torch
 from datasets import load_dataset
-from sklearn.metrics import f1_score, accuracy_score
 from scipy.stats import pearsonr, spearmanr
-
+from sklearn.metrics import accuracy_score, f1_score
 from transformers import (
-    AutoTokenizer,
     AutoModelForSequenceClassification,
+    AutoTokenizer,
     DataCollatorWithPadding,
-    TrainingArguments,
+    EarlyStoppingCallback,
     Trainer,
     TrainerCallback,
-    EarlyStoppingCallback,
+    TrainingArguments,
+    set_seed,
 )
 
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
@@ -126,9 +125,7 @@ def compute_metrics(eval_pred, task_metrics):
         if metric_name in ["pearsonr", "spearmanr"]:
             score = metric_func(labels, np.squeeze(predictions))
         elif metric_name in ["f1_score"]:
-            score = metric_func(
-                np.argmax(predictions, axis=-1), labels, average="binary"
-            )
+            score = metric_func(np.argmax(predictions, axis=-1), labels, average="binary")
         else:
             score = metric_func(np.argmax(predictions, axis=-1), labels)
 
@@ -142,6 +139,7 @@ def compute_metrics(eval_pred, task_metrics):
 
 class MetricsCallback(TrainerCallback):
     """Callback to store train and eval metrics at each logging step."""
+
     def __init__(self):
         self.training_history = {"train": [], "eval": []}
 
@@ -156,23 +154,20 @@ class MetricsCallback(TrainerCallback):
 def main():
     # --- Parse command-line arguments ---
     parser = argparse.ArgumentParser()
-    parser.add_argument("--model_name", type=str, required=True,
-                        help="")
-    parser.add_argument("--model_revision", type=str, required=False,
-                        default=None, help="")
-    parser.add_argument("--task_name", type=str, required=True,
-                        choices=list(russian_superglue_tasks.keys()),
-                        help="Task name from Russian SuperGLUE.")
-    parser.add_argument("--learning_rate", type=float, default=1e-5,
-                        help="Learning rate for fine-tuning.")
-    parser.add_argument("--weight_decay", type=float, default=1e-6,
-                        help="Weight decay.")
-    parser.add_argument("--batch_size", type=int, default=32,
-                        help="Batch size for training.")
-    parser.add_argument("--num_train_epochs", type=int, default=3,
-                        help="Number of training epochs.")
-    parser.add_argument("--lr_scheduler_type", type=str, default="linear",
-                        help="")
+    parser.add_argument("--model_name", type=str, required=True, help="")
+    parser.add_argument("--model_revision", type=str, required=False, default=None, help="")
+    parser.add_argument(
+        "--task_name",
+        type=str,
+        required=True,
+        choices=list(russian_superglue_tasks.keys()),
+        help="Task name from Russian SuperGLUE.",
+    )
+    parser.add_argument("--learning_rate", type=float, default=1e-5, help="Learning rate for fine-tuning.")
+    parser.add_argument("--weight_decay", type=float, default=1e-6, help="Weight decay.")
+    parser.add_argument("--batch_size", type=int, default=32, help="Batch size for training.")
+    parser.add_argument("--num_train_epochs", type=int, default=3, help="Number of training epochs.")
+    parser.add_argument("--lr_scheduler_type", type=str, default="linear", help="")
     args = parser.parse_args()
 
     # Fix random seed for reproducibility
@@ -196,7 +191,6 @@ def main():
         level=logging.INFO,
     )
     logging.info(f"Starting run: {run_name}")
-
 
     # ----- Model and hyperparameters -----
     model_name = args.model_name
@@ -224,10 +218,8 @@ def main():
 
     save_path = f"results_{model_name.replace('/', '_')}_{model_revision}"
     os.makedirs(save_path, exist_ok=True)
-    csv_filename = (
-        f"{task}_ft_lr={lr}_n_epochs={n_epochs}_wd={wd}_bsz={train_bsz}_scheduler={lr_scheduler_type}.csv"
-    )
-    
+    csv_filename = f"{task}_ft_lr={lr}_n_epochs={n_epochs}_wd={wd}_bsz={train_bsz}_scheduler={lr_scheduler_type}.csv"
+
     if os.path.exists(os.path.join(save_path, csv_filename)):
         print("ALREADY TRAINED FOR THIS ARGS")
         return
@@ -256,17 +248,14 @@ def main():
         num_labels=n_labels,
         id2label=id2label,
         label2id=label2id,
-        attn_implementation="sdpa" # To fix randomness
+        attn_implementation="sdpa",  # To fix randomness
     )
     hf_data_collator = DataCollatorWithPadding(tokenizer=hf_tokenizer)
 
     # If you need to do custom tokenization, define a preprocessing function
     def preprocess_function(examples, task_inputs):
         input_sequences = zip(*[examples[inp] for inp in task_inputs])
-        texts = [
-            hf_tokenizer.sep_token.join(parts)
-            for parts in input_sequences
-        ]
+        texts = [hf_tokenizer.sep_token.join(parts) for parts in input_sequences]
         tokenized = hf_tokenizer(texts, truncation=False)
         return tokenized
 
@@ -275,12 +264,9 @@ def main():
 
     # I did that to speed up a bit, but sometimes it raise an exception.
     # tokenized_datasets = load_dataset("TatonkaHF/USER_V2_EVALUATION_RSG_DATASETS", data_dir=task)
-    
+
     tokenized_datasets = raw_datasets.map(
-        partial(preprocess_function, task_inputs=task_inputs),
-        batched=True,
-        batch_size=1,
-        num_proc=1
+        partial(preprocess_function, task_inputs=task_inputs), batched=True, batch_size=1, num_proc=1
     )
 
     training_args = TrainingArguments(
@@ -307,7 +293,7 @@ def main():
         data_seed=RANDOM_SEED,
         dataloader_num_workers=0,
         warmup_ratio=0.2,
-        report_to=[]
+        report_to=[],
     )
 
     # Prepare Trainer
@@ -338,6 +324,7 @@ def main():
     # Save results
     combined_df.to_csv(os.path.join(save_path, csv_filename), index=False)
     logging.info(f"Saved training log to {os.path.join(save_path, csv_filename)}")
+
 
 if __name__ == "__main__":
     main()

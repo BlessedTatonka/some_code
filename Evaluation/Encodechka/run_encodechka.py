@@ -1,28 +1,34 @@
 #!/usr/bin/env python
 
-import os
-import csv
 import argparse
+import csv
+import os
 from datetime import datetime
 from importlib import reload
-from transformers import AutoModel, AutoTokenizer
 
 # Encodechka Eval
 from encodechka_eval import tasks
 from encodechka_eval.bert_embedders import embed_bert_both, get_word_vectors_with_bert
+from transformers import AutoModel, AutoTokenizer
+
 
 def main():
     parser = argparse.ArgumentParser(description="Evaluate a model on multiple Encodechka tasks.")
-    parser.add_argument("--model", type=str, required=True,
-                        help="Name or path of the model (e.g. cointegrated/rubert-tiny).")
-    parser.add_argument("--tasks", type=str, default=None,
-                        help="Comma-separated list of tasks to run (STS, PI, NLI, SA, TI, IA, IC, ICX, NE1, NE2). "
-                             "If not specified, will run all tasks.")
+    parser.add_argument(
+        "--model", type=str, required=True, help="Name or path of the model (e.g. cointegrated/rubert-tiny)."
+    )
+    parser.add_argument(
+        "--tasks",
+        type=str,
+        default=None,
+        help="Comma-separated list of tasks to run (STS, PI, NLI, SA, TI, IA, IC, ICX, NE1, NE2). "
+        "If not specified, will run all tasks.",
+    )
     args = parser.parse_args()
 
     # Set where Encodechka data is stored (or ensure the folder is correct for your setup)
-    DATA_PATH_NAME = 'ENCODECHKA_DATA_PATH'
-    os.environ[DATA_PATH_NAME] = 'encodechka_eval'  # Make sure you have the data in this folder or update accordingly
+    DATA_PATH_NAME = "ENCODECHKA_DATA_PATH"
+    os.environ[DATA_PATH_NAME] = "encodechka_eval"  # Make sure you have the data in this folder or update accordingly
 
     # Reload tasks to ensure environment variable is recognized
     reload(tasks)
@@ -67,30 +73,24 @@ def main():
 
     def run_ne1():
         task_ = tasks.FactRuTask()
-        return task_.eval(
-            lambda words: get_word_vectors_with_bert(words, model=model, tokenizer=tokenizer),
-            args.model
-        )
+        return task_.eval(lambda words: get_word_vectors_with_bert(words, model=model, tokenizer=tokenizer), args.model)
 
     def run_ne2():
         task_ = tasks.RudrTask()
-        return task_.eval(
-            lambda words: get_word_vectors_with_bert(words, model=model, tokenizer=tokenizer),
-            args.model
-        )
+        return task_.eval(lambda words: get_word_vectors_with_bert(words, model=model, tokenizer=tokenizer), args.model)
 
     # Define a mapping from short task name to the runner function
     task_mapping = {
         "STS": run_stsb,
-        "PI":  run_pi,
+        "PI": run_pi,
         "NLI": run_nli,
-        "SA":  run_sa,
-        "TI":  run_ti,
-        "IA":  run_ia,
-        "IC":  run_ic,
+        "SA": run_sa,
+        "TI": run_ti,
+        "IA": run_ia,
+        "IC": run_ic,
         "ICX": run_icx,
         "NE1": run_ne1,
-        "NE2": run_ne2
+        "NE2": run_ne2,
     }
 
     # Default order if no tasks are specified
@@ -147,6 +147,6 @@ def main():
 
     print(f"Results saved to: {csv_path}")
 
+
 if __name__ == "__main__":
     main()
-

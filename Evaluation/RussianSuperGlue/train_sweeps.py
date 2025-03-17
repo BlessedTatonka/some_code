@@ -1,27 +1,26 @@
-import random
-import numpy as np
-import torch
-from transformers import set_seed
-import pandas as pd
-from functools import partial
-import gc
-import os
 import argparse
+import gc
 import logging
+import os
+import random
+from functools import partial
+
+import numpy as np
+import pandas as pd
+import torch
 import wandb
-
 from datasets import load_dataset
-from sklearn.metrics import f1_score, accuracy_score
 from scipy.stats import pearsonr, spearmanr
-
+from sklearn.metrics import accuracy_score, f1_score
 from transformers import (
-    AutoTokenizer,
     AutoModelForSequenceClassification,
+    AutoTokenizer,
     DataCollatorWithPadding,
-    TrainingArguments,
+    EarlyStoppingCallback,
     Trainer,
     TrainerCallback,
-    EarlyStoppingCallback,
+    TrainingArguments,
+    set_seed,
 )
 
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
@@ -127,22 +126,21 @@ def compute_metrics(eval_pred, task_metrics):
         if metric_name in ["pearsonr", "spearmanr"]:
             score = metric_func(labels, np.squeeze(predictions))
         elif metric_name in ["f1_score"]:
-            score = metric_func(
-                np.argmax(predictions, axis=-1), labels, average="binary"
-            )
+            score = metric_func(np.argmax(predictions, axis=-1), labels, average="binary")
         else:
             score = metric_func(np.argmax(predictions, axis=-1), labels)
 
         if isinstance(score, tuple):
-            metrics_d['global_metric'] = score[0]
+            metrics_d["global_metric"] = score[0]
         else:
-            metrics_d['global_metric'] = score
+            metrics_d["global_metric"] = score
 
     return metrics_d
 
 
 class MetricsCallback(TrainerCallback):
     """Callback to store train and eval metrics at each logging step."""
+
     def __init__(self):
         self.training_history = {"train": [], "eval": []}
 
@@ -179,7 +177,6 @@ def main():
     )
     logging.info(f"Starting run: {run_name}")
 
-
     # ----- Model and hyperparameters -----
     model_name = args.model_name
     model_revision = args.model_revision
@@ -206,12 +203,9 @@ def main():
 
     save_folder = f"results_{model_name.replace('/', '_')}_{model_revision}"
     os.makedirs(save_folder, exist_ok=True)
-    run_save_folder = (
-        f"{task}_ft_lr={lr}_n_epochs={n_epochs}_wd={wd}_bsz={train_bsz}_scheduler={lr_scheduler_type}"
-    )
+    run_save_folder = f"{task}_ft_lr={lr}_n_epochs={n_epochs}_wd={wd}_bsz={train_bsz}_scheduler={lr_scheduler_type}"
     output_dir = os.path.join(save_folder, run_save_folder)
 
-    
     # if os.path.exists(output_dir):
     #     print("ALREADY TRAINED FOR THIS ARGS")
     #     return
@@ -240,17 +234,14 @@ def main():
         num_labels=n_labels,
         id2label=id2label,
         label2id=label2id,
-        #attn_implementation="sdpa" # To fix randomness
+        # attn_implementation="sdpa" # To fix randomness
     )
     hf_data_collator = DataCollatorWithPadding(tokenizer=hf_tokenizer)
 
     # If you need to do custom tokenization, define a preprocessing function
     def preprocess_function(examples, task_inputs):
         input_sequences = zip(*[examples[inp] for inp in task_inputs])
-        texts = [
-            hf_tokenizer.sep_token.join(parts)
-            for parts in input_sequences
-        ]
+        texts = [hf_tokenizer.sep_token.join(parts) for parts in input_sequences]
         tokenized = hf_tokenizer(texts, truncation=False)
         return tokenized
 
@@ -259,12 +250,9 @@ def main():
 
     # I did that to speed up a bit, but sometimes it raise an exception.
     # tokenized_datasets = load_dataset("TatonkaHF/USER_V2_EVALUATION_RSG_DATASETS", data_dir=task)
-    
+
     tokenized_datasets = raw_datasets.map(
-        partial(preprocess_function, task_inputs=task_inputs),
-        batched=True,
-        batch_size=1,
-        num_proc=1
+        partial(preprocess_function, task_inputs=task_inputs), batched=True, batch_size=1, num_proc=1
     )
 
     training_args = TrainingArguments(
@@ -293,7 +281,7 @@ def main():
         data_seed=RANDOM_SEED,
         dataloader_num_workers=0,
         warmup_ratio=0.2,
-        report_to='wandb'
+        report_to="wandb",
     )
 
     # Prepare Trainer
@@ -317,8 +305,7 @@ def main():
     logging.info("Training completed. Collecting metrics and saving results...")
     # trainer.save_model(os.path.join(output_dir, "best_model"))
     # logging.info(f'Saved best model to {os.path.join(output_dir, "best_model")}')
-    
-    
+
     train_history_df = pd.DataFrame(metrics_callback.training_history["train"]).add_prefix("train_")
     eval_history_df = pd.DataFrame(metrics_callback.training_history["eval"]).add_prefix("eval_")
 
@@ -326,8 +313,9 @@ def main():
     combined_df = pd.concat([train_history_df, eval_history_df], axis=1)
 
     # Save results
-    combined_df.to_csv(os.path.join(output_dir, 'results.csv'), index=False)
+    combined_df.to_csv(os.path.join(output_dir, "results.csv"), index=False)
     logging.info(f"Saved training log to {os.path.join(output_dir, 'results.csv')}")
+
 
 if __name__ == "__main__":
     main()

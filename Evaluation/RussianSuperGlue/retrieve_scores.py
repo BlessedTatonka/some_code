@@ -1,12 +1,13 @@
+import argparse
+import glob
 import os
 import re
-import glob
-import argparse
-import pandas as pd
 from collections import defaultdict
 
-def maybe_update_best(results_dict, task,
-                      new_score, new_lr, new_n_epochs, new_wd, new_bsz, new_scheduler):
+import pandas as pd
+
+
+def maybe_update_best(results_dict, task, new_score, new_lr, new_n_epochs, new_wd, new_bsz, new_scheduler):
     """
     If `new_score` is better than what's stored (or ties but fewer epochs),
     update the entry in results_dict[task].
@@ -14,7 +15,7 @@ def maybe_update_best(results_dict, task,
     if task not in results_dict:
         results_dict[task] = (new_score, new_lr, new_n_epochs, new_wd, new_bsz, new_scheduler)
         return
-    
+
     old_score, old_lr, old_n_epochs, old_wd, old_bsz, old_scheduler = results_dict[task]
 
     # Compare float values for the metric
@@ -25,12 +26,13 @@ def maybe_update_best(results_dict, task,
         if int(new_n_epochs) < int(old_n_epochs):
             results_dict[task] = (new_score, new_lr, new_n_epochs, new_wd, new_bsz, new_scheduler)
 
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "results_dir", 
-        default="results_deepvk_moderna-small_stage_3__50B_tok", 
-        help="Path to the top-level directory that contains subdirectories for each task/param setting."
+        "results_dir",
+        default="results_deepvk_moderna-small_stage_3__50B_tok",
+        help="Path to the top-level directory that contains subdirectories for each task/param setting.",
     )
     args = parser.parse_args()
 
@@ -73,11 +75,11 @@ def main():
             continue
 
         # Extract parameters from the folder name
-        task      = match.group("task")
-        lr        = match.group("lr")
-        n_epochs  = match.group("n_epochs")
-        wd        = match.group("wd")
-        bsz       = match.group("bsz")
+        task = match.group("task")
+        lr = match.group("lr")
+        n_epochs = match.group("n_epochs")
+        wd = match.group("wd")
+        bsz = match.group("bsz")
         scheduler = match.group("scheduler")
 
         # Gather all CSV files in this subdir
@@ -109,16 +111,10 @@ def main():
             last_val = df.loc[last_idx, metric_col]
 
             # Update best-any-row
-            maybe_update_best(
-                best_any_row, task,
-                best_val, lr, n_epochs, wd, bsz, scheduler
-            )
+            maybe_update_best(best_any_row, task, best_val, lr, n_epochs, wd, bsz, scheduler)
 
             # Update best-last-row
-            maybe_update_best(
-                best_last_row, task,
-                last_val, lr, n_epochs, wd, bsz, scheduler
-            )
+            maybe_update_best(best_last_row, task, last_val, lr, n_epochs, wd, bsz, scheduler)
 
     # Build the final tables
     tasks = sorted(set(best_any_row.keys()) | set(best_last_row.keys()))
@@ -172,7 +168,7 @@ def main():
             "bsz",
             "scheduler",
             "num_runs",
-        ]
+        ],
     )
     df_last = pd.DataFrame(
         last_dict,
@@ -184,7 +180,7 @@ def main():
             "bsz",
             "scheduler",
             "num_runs",
-        ]
+        ],
     )
 
     print("\n=== Absolute Best Metric (any row) ===")
@@ -192,6 +188,7 @@ def main():
 
     print("\n=== Best Metric (last row) ===")
     print(df_last)
+
 
 if __name__ == "__main__":
     main()

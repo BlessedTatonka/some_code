@@ -4,7 +4,7 @@ from pathlib import Path
 from setuptools import find_packages, setup
 
 THIS_DIR = Path(__file__).parent
-DATA_ROOT = 'encodechka_eval/data'
+DATA_ROOT = "encodechka_eval/data"
 
 
 def _load_requirements(path_dir: Path, comment_char: str = "#"):

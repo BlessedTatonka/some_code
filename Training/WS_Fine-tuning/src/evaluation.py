@@ -7,7 +7,7 @@ from sentence_transformers.evaluation import (
 )
 
 
-def ir_evaluate(use_instructions=False, query_prompt="find_passage: ", passage_prompt="find_query: "):
+def ir_evaluate(use_instructions=False, query_prompt="search_query: ", passage_prompt="search_document: "):
     """
     Loads the ai-forever/rubq-retrieval dataset for IR evaluation.
     The corpus is reduced to relevant docs plus a random sample.

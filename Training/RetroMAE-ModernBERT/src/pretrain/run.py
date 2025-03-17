@@ -4,20 +4,25 @@ import sys
 
 import transformers
 from transformers import (
-    AutoTokenizer,
-    ModernBertForMaskedLM,
     AutoConfig,
-    HfArgumentParser, set_seed, )
-from transformers import (
+    AutoTokenizer,
+    HfArgumentParser,
+    ModernBertForMaskedLM,
     TrainerCallback,
-    TrainingArguments,
+    TrainerControl,
     TrainerState,
-    TrainerControl
+    TrainingArguments,
+    set_seed,
 )
 from transformers.trainer_utils import is_main_process
 
 from .arguments import DataTrainingArguments, ModelArguments
-from .data import DatasetForPretraining, RetroMAECollator, DupMAECollator
+from .data import (
+    DatasetForPretraining,
+    DupMAECollator,
+    NoStreamingDataset,
+    RetroMAECollator,
+)
 from .modeling import RetroMAEForPretraining
 from .modeling_duplex import DupMAEForPretraining
 from .trainer import PreTrainer
@@ -47,10 +52,10 @@ def main():
         model_args, data_args, training_args = parser.parse_args_into_dataclasses()
 
     if (
-            os.path.exists(training_args.output_dir)
-            and os.listdir(training_args.output_dir)
-            and training_args.do_train
-            and not training_args.overwrite_output_dir
+        os.path.exists(training_args.output_dir)
+        and os.listdir(training_args.output_dir)
+        and training_args.do_train
+        and not training_args.overwrite_output_dir
     ):
         raise ValueError(
             f"Output directory ({training_args.output_dir}) already exists and is not empty."
@@ -76,10 +81,10 @@ def main():
         + f"distributed training: {bool(training_args.local_rank != -1)}, 16-bits training: {training_args.fp16}"
     )
     # Set the verbosity to info of the Transformers logger (on main process only):
-    if is_main_process(training_args.local_rank):
-        transformers.utils.logging.set_verbosity_info()
-        transformers.utils.logging.enable_default_handler()
-        transformers.utils.logging.enable_explicit_format()
+    # if is_main_process(training_args.local_rank):
+    # transformers.utils.logging.set_verbosity_info()
+    # transformers.utils.logging.enable_default_handler()
+    # transformers.utils.logging.enable_explicit_format()
     if training_args.local_rank in (0, -1):
         logger.info("Training/evaluation parameters %s", training_args)
         logger.info("Model parameters %s", model_args)
@@ -87,15 +92,20 @@ def main():
 
     set_seed(training_args.seed)
 
-    if model_args.pretrain_method == 'retromae':
+    if model_args.pretrain_method == "retromae":
         model_class = RetroMAEForPretraining
         collator_class = RetroMAECollator
-    elif model_args.pretrain_method == 'dupmae':
+    elif model_args.pretrain_method == "dupmae":
         model_class = DupMAEForPretraining
         collator_class = DupMAECollator
-        
+
     if model_args.model_name_or_path:
-        model = model_class.from_pretrained(model_args, model_args.model_name_or_path, revision=model_args.model_revision)
+        model = model_class.from_pretrained(
+            model_args,
+            model_args.model_name_or_path,
+            revision=model_args.model_revision,
+            attn_implementation="flash_attention_2",
+        )
         logger.info(f"------Load model from {model_args.model_name_or_path}------")
         tokenizer = AutoTokenizer.from_pretrained(model_args.model_name_or_path)
     elif model_args.config_name:
@@ -107,15 +117,19 @@ def main():
     else:
         raise ValueError("You must provide the model_name_or_path or config_name")
 
-    train_dataset = DatasetForPretraining(data_args.train_data)
+    # train_dataset = DatasetForPretraining(data_args.train_data)
+    train_dataset = NoStreamingDataset(data_args.train_data)
     eval_dataset = None
     if data_args.eval_data is not None:
-        eval_dataset = DatasetForPretraining(data_args.eval_data)
-            
-    data_collator = collator_class(tokenizer,
-                                   encoder_mlm_probability=data_args.encoder_mlm_probability,
-                                   decoder_mlm_probability=data_args.decoder_mlm_probability,
-                                   max_seq_length=data_args.max_seq_length)
+        # eval_dataset = DatasetForPretraining(data_args.eval_data)
+        eval_dataset = NoStreamingDataset(data_args.eval_data)
+
+    data_collator = collator_class(
+        tokenizer,
+        encoder_mlm_probability=data_args.encoder_mlm_probability,
+        decoder_mlm_probability=data_args.decoder_mlm_probability,
+        max_seq_length=data_args.max_seq_length,
+    )
 
     # Initialize our Trainer
     trainer = PreTrainer(
@@ -124,15 +138,16 @@ def main():
         train_dataset=train_dataset,
         eval_dataset=eval_dataset,
         data_collator=data_collator,
-        tokenizer=tokenizer
+        processing_class=tokenizer,
     )
     trainer.add_callback(TrainerCallbackForSaving())
 
-    # # Training
+    # Training
     trainer.train(resume_from_checkpoint=training_args.resume_from_checkpoint)
     trainer.save_model()
 
     logger.info("Training complete.")
+
 
 if __name__ == "__main__":
     main()

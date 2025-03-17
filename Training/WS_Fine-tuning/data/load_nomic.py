@@ -1,18 +1,16 @@
+import argparse
+import gzip
+import json
 import os
 import re
-import json
-import yaml
-import gzip
-import argparse
 
 import fsspec
+import yaml
 from streaming import MDSWriter
 from tqdm import tqdm
 
-MDS_COLS_TEXT = {
-    "anchor": "str",
-    "positive": "str"
-}
+MDS_COLS_TEXT = {"anchor": "str", "positive": "str"}
+
 
 def expand_shard_pattern(pattern: str):
     """
@@ -23,18 +21,19 @@ def expand_shard_pattern(pattern: str):
 
     If no braces are found, return [pattern] as-is.
     """
-    match = re.search(r'{(\d+)\.\.(\d+)}', pattern)
+    match = re.search(r"{(\d+)\.\.(\d+)}", pattern)
     if not match:
         return [pattern]
 
     start, end = int(match.group(1)), int(match.group(2))
-    prefix = pattern[:match.start()]
-    suffix = pattern[match.end():]
+    prefix = pattern[: match.start()]
+    suffix = pattern[match.end() :]
 
     expanded = []
     for i in range(start, end + 1):
         expanded.append(f"{prefix}{i:05d}{suffix}")
     return expanded
+
 
 def convert_dataset_to_mds(dataset_cfg, output_base_dir):
     dataset_name = dataset_cfg["name"]
@@ -83,6 +82,7 @@ def convert_dataset_to_mds(dataset_cfg, output_base_dir):
 
         print(f"    Done. Wrote {total_written} records for '{dataset_name}'.")
 
+
 def main():
     parser = argparse.ArgumentParser(description="Convert a YAML list of datasets to MDS format.")
     parser.add_argument("--config", required=True, help="Path to your .yaml config file.")
@@ -97,6 +97,7 @@ def main():
         convert_dataset_to_mds(ds_cfg, args.output)
 
     print("All done!")
+
 
 if __name__ == "__main__":
     main()

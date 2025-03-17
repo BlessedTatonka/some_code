@@ -1,0 +1,68 @@
+cultura_sampled:
+    repeat: 1
+translations:
+    repeat: 1
+nomic/paq:
+    repeat: 1
+nomic/s2orc_citation_titles:
+    repeat: 1
+nomic/s2orc_title_abstract:
+    repeat: 1
+nomic/s2orc_abstract_citation:
+    repeat: 1
+nomic/s2orc_abstract_body:
+    repeat: 1
+nomic/wikianswers:
+    repeat: 1
+nomic/wikipedia:
+    repeat: 1
+nomic/gooaq:
+    repeat: 1
+nomic/codesearch:
+    repeat: 1
+nomic/yahoo_title_answer:
+    repeat: 1
+nomic/agnews:
+    repeat: 1
+nomic/amazonqa:
+    repeat: 1
+nomic/yahoo_qa:
+    repeat: 1
+nomic/yahoo_title_question:
+    repeat: 1
+nomic/ccnews:
+    repeat: 1
+nomic/npr:
+    repeat: 1
+nomic/eli5:
+    repeat: 1
+nomic/cnn:
+    repeat: 1
+nomic/stackexchange_duplicate_questions:
+    repeat: 1
+nomic/stackexchange_title_body:
+    repeat: 1
+nomic/stackexchange_body_body:
+    repeat: 1
+nomic/sentence_compression:
+    repeat: 1
+nomic/wikihow:
+    repeat: 1
+nomic/altlex:
+    repeat: 1
+nomic/quora:
+    repeat: 1
+nomic/simplewiki:
+    repeat: 1
+nomic/squad:
+    repeat: 1
+nomic/mc4-filtered_ru:
+    repeat: 3
+nomic/mc4-filtered_ru-Latn:
+    repeat: 1
+nomic/multilingual-cc-news-filtered_ru:
+    repeat: 3
+nomic/reddit_title_body:
+    repeat: 1
+nomic/amazon_reviews:
+    repeat: 1

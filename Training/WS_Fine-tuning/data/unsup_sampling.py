@@ -1,11 +1,12 @@
 import argparse
 import json
-import random
 import math
-from tqdm import tqdm
+import multiprocessing
+import random
+
 from datasets import load_dataset
 from razdel import sentenize
-import multiprocessing
+from tqdm import tqdm
 
 
 def random_split(example, min_block_length=2):
@@ -47,8 +48,12 @@ def main():
     parser.add_argument("--min_block_length", type=int, default=2, help="Minimum number of sentences per block")
     parser.add_argument("--seed", type=int, default=42, help="Random seed")
     parser.add_argument("--num_workers", type=int, default=8, help="Number of multiprocessing workers")
-    parser.add_argument("--chunk_size", type=int, default=1000,
-                        help="Number of examples to group into a batch before processing in parallel")
+    parser.add_argument(
+        "--chunk_size",
+        type=int,
+        default=1000,
+        help="Number of examples to group into a batch before processing in parallel",
+    )
     args = parser.parse_args()
 
     random.seed(args.seed)
@@ -59,11 +64,9 @@ def main():
     samples_collected = 0
 
     # Set up multiprocessing pool
-    with multiprocessing.Pool(
-        processes=args.num_workers,
-        initializer=init_worker,
-        initargs=(args.seed, )
-    ) as pool, open(args.output, "w", encoding="utf-8") as f:
+    with multiprocessing.Pool(processes=args.num_workers, initializer=init_worker, initargs=(args.seed,)) as pool, open(
+        args.output, "w", encoding="utf-8"
+    ) as f:
 
         progress_bar = tqdm(total=args.max_samples, desc="Generating pairs")
 

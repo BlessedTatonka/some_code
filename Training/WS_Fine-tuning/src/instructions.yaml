@@ -1,8 +1,119 @@
 default_prompt_name: "default"
-default: "find_query: "
-ru_hnp:
-  anchor: "find_query: "
-  positive: "find_query: "
-summaries:
-  anchor: "find_passage: "
-  positive: "find_query: "
+default: "clustering: "
+cultura_sampled:
+    anchor: "clustering: "
+    positive: "clustering: "
+translations:
+    anchor: "clustering: "
+    positive: "clustering: "
+paq:
+    anchor: "search_query: "
+    positive: "search_document: "
+s2orc_citation_titles:
+    anchor: "clustering: "
+    positive: "clustering: "
+s2orc_title_abstract:
+    anchor: "clustering: "
+    positive: "clustering: "
+s2orc_abstract_citation:
+    anchor: "clustering: "
+    positive: "clustering: "
+s2orc_abstract_body:
+    anchor: "clustering: "
+    positive: "clustering: "
+wikianswers:
+    anchor: "classification: "
+    positive: "classification: "
+wikipedia:
+    anchor: "classification: "
+    positive: "classification: "
+gooaq:
+    anchor: "search_query: "
+    positive: "search_document: "
+codesearch:
+    anchor: "clustering: "
+    positive: "clustering: "
+yahoo_title_answer:
+    anchor: "search_query: "
+    positive: "search_document: "
+agnews:
+    anchor: "classification: "
+    positive: "classification: "
+amazonqa:
+    anchor: "search_query: "
+    positive: "search_document: "
+yahoo_qa:
+    anchor: "search_query: "
+    positive: "search_document: "
+yahoo_title_question:
+    anchor: "search_query: "
+    positive: "search_document: "
+ccnews:
+    anchor: "classification: "
+    positive: "classification: "
+npr:
+    anchor: "classification: "
+    positive: "classification: "
+eli5:
+    anchor: "search_query: "
+    positive: "search_document: "
+cnn:
+    anchor: "classification: "
+    positive: "classification: "
+stackexchange_duplicate_questions:
+    anchor: "clustering: "
+    positive: "clustering: "
+stackexchange_title_body:
+    anchor: "clustering: "
+    positive: "clustering: "
+stackexchange_body_body:
+    anchor: "clustering: "
+    positive: "clustering: "
+sentence_compression:
+    anchor: "classification: "
+    positive: "classification: "
+wikihow:
+    anchor: "classification: "
+    positive: "classification: "
+altlex:
+    anchor: "classification: "
+    positive: "classification: "
+quora:
+    anchor: "classification: "
+    positive: "classification: "
+simplewiki:
+    anchor: "classification: "
+    positive: "classification: "
+squad:
+    anchor: "search_query: "
+    positive: "search_document: "
+mc4-filtered_ru:
+    anchor: "search_query: "
+    positive: "search_document: "
+mc4-filtered_ru-Latn:
+    anchor: "search_query: "
+    positive: "search_document: "
+multilingual-cc-news-filtered_ru:
+    anchor: "search_query: "
+    positive: "search_document: "
+reddit_title_body:
+    anchor: "clustering: "
+    positive: "clustering: "
+amazon_reviews:
+    anchor: "classification: "
+    positive: "classification: "
+
+#Validation datasets
+
+cultura_val:
+    anchor: "clustering: "
+    positive: "clustering: "
+miracl_val:
+    anchor: "search_query: "
+    positive: "search_document: "
+mldr_val:
+    anchor: "search_query: "
+    positive: "search_document: "
+mmarco_val:
+    anchor: "search_query: "
+    positive: "search_document: "

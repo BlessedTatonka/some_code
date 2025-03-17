@@ -1,16 +1,22 @@
+import json
 import os
 import random
 from copy import deepcopy
 from dataclasses import dataclass
+from typing import List, Optional
 
+import numpy as np
 import torch.utils.data.dataset
-from datasets import Dataset, load_dataset, concatenate_datasets
+from datasets import Dataset, concatenate_datasets, load_dataset
+from loguru import logger
+from streaming.base.format import reader_from_json
+from streaming.base.spanner import Spanner
 from transformers import DataCollatorForLanguageModeling
-from typing import List
+
+from .utils import tensorize_batch
 
 # from transformers import DataCollatorForWholeWordMask
 
-from .utils import tensorize_batch
 
 @dataclass
 class DataCollatorForWholeWordMask(DataCollatorForLanguageModeling):
@@ -23,7 +29,7 @@ class DataCollatorForWholeWordMask(DataCollatorForLanguageModeling):
 class DataCollatorForWholeWordMask(DataCollatorForLanguageModeling):
     """
     Example data collator that applies whole-word masking for a ModernBERT-style
-    tokenizer, which (like BERT) uses `##` to indicate subword pieces and uses 
+    tokenizer, which (like BERT) uses `##` to indicate subword pieces and uses
     special tokens such as [CLS], [SEP], [PAD], etc.
 
     Adapted from a PhoBERT example.
@@ -37,11 +43,12 @@ class DataCollatorForWholeWordMask(DataCollatorForLanguageModeling):
         """
         Get 0/1 labels for masked tokens with whole word mask proxy
         """
-        
+
         cand_indexes = []
-        special_tokens = [val for key, val in self.tokenizer.special_tokens_map.items()
-                          if key not in ['unk_token', 'mask_token']]
-        for (i, token) in enumerate(input_tokens):
+        special_tokens = [
+            val for key, val in self.tokenizer.special_tokens_map.items() if key not in ["unk_token", "mask_token"]
+        ]
+        for i, token in enumerate(input_tokens):
             if token in special_tokens:
                 continue
 
@@ -80,6 +87,7 @@ class DataCollatorForWholeWordMask(DataCollatorForLanguageModeling):
         mask_labels = [1 if i in covered_indexes else 0 for i in range(len(input_tokens))]
         return mask_labels
 
+
 class DatasetForPretraining(torch.utils.data.Dataset):
     def __init__(self, data_dir):
         if os.path.isdir(data_dir):
@@ -94,10 +102,10 @@ class DatasetForPretraining(torch.utils.data.Dataset):
             self.dataset = self.load_dataset(data_dir)
 
     def load_dataset(self, file):
-        if file.endswith('.jsonl') or file.endswith('.json'):
-           return load_dataset('json', data_files=file)['train']
-        elif file.endswith('.parquet'):
-           return load_dataset('parquet', data_files=file)['train']
+        if file.endswith(".jsonl") or file.endswith(".json"):
+            return load_dataset("json", data_files=file)["train"]
+        elif file.endswith(".parquet"):
+            return load_dataset("parquet", data_files=file)["train"]
         elif os.path.isdir(file):
             return Dataset.load_from_disk(file)
         else:
@@ -106,10 +114,46 @@ class DatasetForPretraining(torch.utils.data.Dataset):
         # return load_dataset("TopicNet/Lenta", split='train')
 
     def __getitem__(self, item):
-        return self.dataset[item]['text']
+        return self.dataset[item]["text"]
 
     def __len__(self):
         return len(self.dataset)
+
+
+class NoStreamingDataset(torch.utils.data.Dataset):
+    """
+    A dataset class that can read data with raw mds-format (mosaic streaming-format without compression)
+    from local. In comparison with `StreamingTextDataset` that also can read data with mds-format from local,
+    this class is slimmer, more efficient, and does not contain redundant code required for streaming.
+    """
+
+    def __init__(self, data_dir: str):
+        super().__init__()
+        index_file_path = os.path.join(data_dir, "index.json")
+        with open(index_file_path) as f:
+            obj = json.load(f)
+        self.shards = []
+        for info in obj["shards"]:
+            shard = reader_from_json(data_dir, split=None, obj=info)
+            raw_filename = os.path.join(shard.dirname, shard.split, shard.raw_data.basename)
+            assert os.path.isfile(raw_filename) or os.path.islink(
+                raw_filename
+            ), f"Raw file {raw_filename} does not exist"
+            shard.validate(True)
+            self.shards.append(shard)
+        samples_per_shard = np.array([shard.samples for shard in self.shards], np.int64)
+        self.len = samples_per_shard.sum()
+        self.spanner = Spanner(samples_per_shard)
+        logger.info(f"Initialize dataset with {self.len} samples")
+
+    def __getitem__(self, index: int) -> str:
+        shard_id, shard_sample_id = self.spanner[index]
+        shard = self.shards[shard_id]
+        sample = shard[shard_sample_id]
+        return sample["text"]
+
+    def __len__(self):
+        return self.len
 
 
 @dataclass
@@ -176,6 +220,7 @@ class RetroMAECollator(DataCollatorForWholeWordMask):
         }
 
         return batch
+
 
 @dataclass
 class DupMAECollator(DataCollatorForWholeWordMask):
@@ -248,7 +293,24 @@ class DupMAECollator(DataCollatorForWholeWordMask):
             "decoder_input_ids": origin_input_ids_batch,
             "decoder_attention_mask": matrix_attention_mask_batch,  # [B,L,L]
             "decoder_labels": decoder_labels_batch,
-            "bag_word_weight": bag_word_weight
+            "bag_word_weight": bag_word_weight,
         }
 
         return batch
+
+
+if __name__ == "__main__":
+    from argparse import ArgumentParser
+
+    _arg_parser = ArgumentParser()
+    _arg_parser.add_argument("data_dir", type=str)
+    _arg_parser.add_argument("--num_samples", type=int, default=5)
+
+    args = _arg_parser.parse_args()
+
+    dataset = NoStreamingDataset(args.data_dir)
+
+    indices = random.sample(range(len(dataset)), min(len(dataset), args.num_samples))
+    for i in indices:
+        sample = dataset[i]
+        print(f"Sample {i}:\n{sample}\n")
