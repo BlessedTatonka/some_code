@@ -1,0 +1,102 @@
+default_prompt_name: "default"
+default: "search_query: "
+
+# EN
+
+hotpotqa_hn_mine_shuffled:
+    anchor: "search_query: "
+    positive: "search_document: "
+medi_sts_stackexchange_dupe:
+    anchor: "search_query: "
+    positive: "search_query: "
+medi_supernli_sampled:
+    anchor: "classification: "
+    positive: "classification: "
+nli_simcse_50negs_fixed:
+    anchor: "classification: "
+    positive: "classification: "
+reddit_triples:
+    anchor: "clustering: "
+    positive: "clustering: "
+fever_hn_mine:
+    anchor: "search_query: "
+    positive: "search_document: "
+medi_sts_flickr_sampled:
+    anchor: "search_query: "
+    positive: "search_query: "
+medi_sts_wiki_rephrasal:
+    anchor: "clustering: "
+    positive: "clustering: "
+msmarco_distillation_simlm_rescored_reranked_min15:
+    anchor: "search_query: "
+    positive: "search_document: "
+nq_cocondensor_hn_mine_reranked_min15:
+    anchor: "search_query: "
+    positive: "search_document: "
+
+
+# RU
+
+AllNLI:
+    anchor: "classification: "
+    positive: "classification: "
+ru-hnp:
+    anchor: "search_query: "
+    positive: "search_query: "
+ru_wanli_triplets:
+    anchor: "classification: "
+    positive: "classification: "
+lenta:
+    anchor: "classification: "
+    positive: "classification: "
+fishki:
+    anchor: "classification: "
+    positive: "classification: "
+gazeta:
+    anchor: "classification: "
+    positive: "classification: "
+summ_dialog_news:
+    anchor: "clustering: "
+    positive: "clustering: "
+wikiomnia_qna:
+    anchor: "search_query: "
+    positive: "search_document: "
+yandex_q:
+    anchor: "classification: "
+    positive: "classification: "
+habr_qna:
+    anchor: "classification: "
+    positive: "classification: "
+mmarco_ru_500k:
+    anchor: "search_query: "
+    positive: "search_document: "
+ru-queries:
+    anchor: "search_query: "
+    positive: "search_document: "
+mr-tydi_ru:
+    anchor: "search_query: "
+    positive: "search_document: "
+mldr_ru:
+    anchor: "search_query: "
+    positive: "search_document: "
+miracl_ru:
+    anchor: "search_query: "
+    positive: "search_document: "
+sampled_wiki:
+    anchor: "clustering: "
+    positive: "clustering: "
+
+#Validation datasets
+
+cultura_val:
+    anchor: "clustering: "
+    positive: "clustering: "
+miracl_val:
+    anchor: "search_query: "
+    positive: "search_document: "
+mldr_val:
+    anchor: "search_query: "
+    positive: "search_document: "
+mmarco_val:
+    anchor: "search_query: "
+    positive: "search_document: "
