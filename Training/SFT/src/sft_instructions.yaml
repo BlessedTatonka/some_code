@@ -1,5 +1,5 @@
 default_prompt_name: "default"
-default: "search_query: "
+default: "classification: "
 
 # EN
 
@@ -7,8 +7,8 @@ hotpotqa_hn_mine_shuffled:
     anchor: "search_query: "
     positive: "search_document: "
 medi_sts_stackexchange_dupe:
-    anchor: "search_query: "
-    positive: "search_query: "
+    anchor: "classification: "
+    positive: "classification: "
 medi_supernli_sampled:
     anchor: "classification: "
     positive: "classification: "
@@ -41,8 +41,8 @@ AllNLI:
     anchor: "classification: "
     positive: "classification: "
 ru-hnp:
-    anchor: "search_query: "
-    positive: "search_query: "
+    anchor: "classification: "
+    positive: "classification: "
 ru_wanli_triplets:
     anchor: "classification: "
     positive: "classification: "
