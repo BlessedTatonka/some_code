@@ -1,0 +1,12 @@
+program: run_sweep.py
+method: grid
+metric:
+  name: eval/sequential_score
+  goal: maximize
+parameters:
+  learning_rate:
+    values: [3e-5, 5e-5]
+  weight_decay:
+    values: [0.01, 0.001]
+  temperature:
+    values: [0.01, 0.02]
