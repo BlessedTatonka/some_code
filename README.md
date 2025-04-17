@@ -2,14 +2,12 @@
 
 This model is a part of the new **USER2** series – an evolution of the **USER** family (**U**niversal **S**entence **E**ncoder for **R**ussian), designed for efficient and accurate sentence representation with long-context support (up to 8192 tokens). The models are built on top of the strong [RuModernBERT](https://huggingface.co/collections/deepvk/rumodernbert-67b5e82fbc707d7ed3857743) architecture and show significant performance improvements for a diversity of Russian tasks.
 
-| Model              | Model Size | Hidden Dim | Context Length |
-|-------------------:|:----------:|:----------:|:--------------:|
-| `deepvk/USER2-small` | 35M        | 512        | 8192           |
-| [deepvk/USER2-base](https://huggingface.co/deepvk/RuModernBERT-base)  | 110M       | 768        | 8192           |
-
 This model also supports Matryoshka Representation Learning (MRL) — a technique that allows reducing embedding size with only a minimal drop in representation quality. It was trained with MRL dimensions `[32, 64, 128, 256, 384]`, which are therefore fully optimized for use.
 
-<img src="assets/MRL.png" alt="MRL" width="600"/>
+| Model              | Size | Hidden Dim | Context Length |
+|-------------------:|:----------:|:----------:|:--------------:|
+| `deepvk/USER2-small` | 35M        | 384        | 8192           |
+| [deepvk/USER2-base](https://huggingface.co/deepvk/RuModernBERT-base)  | 150M       | 768        | 8192           |
 
 ## Perfomance
 
@@ -30,7 +28,22 @@ To evaluate the model, we measure quality on the MTEB(rus) benchmark. Additional
 
 **MLDR**
 
-todo
+In addition to the nDCG@10 score, we report the time required to encode the corpus and the peak GPU memory consumption. For USER2 models, FlashAttention is employed. Encoding is performed on an A100 GPU using the native MTEB script with a batch size of 32.
+
+| Model     | Size | nDCG@10 ↑ |
+|----------:|:---------:|:---------:|
+| USER2-small |  35M   | 51.69     |
+| USER2-base  |  150M   | 54.17     |
+| USER-bge-m3  |  359M    |58.53     | 
+| KaLM-v1.5     |   494M     |  53.75 | 
+| jina-embeddings-v3 | 572M  | 49.67  |
+| E5-mistral-7b |   7.11B   |52.40  |
+
+**MRL**
+
+To evaluate MRL capabilities, we again use MTEB(rus), this time by cropping the embedding dimensions to the chosen size.
+
+<img src="assets/MRL.png" alt="MRL" width="600"/>
 
 ## Usage
 
@@ -175,12 +188,43 @@ This approach shows promising results, as we were able to train strong-performin
 
 | Dataset                     | Size | Upsample |
 |----------------------------:|:----:|:-------:|
-| nomic-en                    | 235M |   1      |
-| nomic-ru                    | 39M  |   3      |
+| [nomic-en](https://github.com/nomic-ai/nomic)                    | 235M |   1      |
+| [nomic-ru](https://github.com/nomic-ai/nomic)                    | 39M  |   3      |
 | en-ru parallel              | 250M |   1      |
-| cultura-sampled             | 50M  |   1      |
+| [cultura-sampled](https://huggingface.co/datasets/deepvk/cultura_ru_edu)             | 50M  |   1      |
 | **Total**                   | 652M |          |
 
-For the third stage, we switch to cleaner, task-specific datasets. In some cases, we applied additional filtering using a cross-encoder. For all retrieval datasets we mine hard-negatives.
+For the third stage, we switch to cleaner, task-specific datasets. In some cases, we applied additional filtering using a cross-encoder. For all retrieval datasets we mine hard-negatives. 
 
-**TABLE HERE**
+| Dataset               | Examples   |
+|----------------------:|:----------:|
+| [Nomic-en-supervised](https://huggingface.co/datasets/nomic-ai/nomic-embed-supervised-data) | 1.7M |
+| AllNLI                | 200K    |
+| [fishkinet-posts](https://huggingface.co/datasets/nyuuzyou/fishkinet-posts)                | 93K     |
+| [gazeta](https://huggingface.co/datasets/IlyaGusev/gazeta)                | 55K     |
+| [habr_qna](https://huggingface.co/datasets/its5Q/habr_qna)              | 100K    |
+| [lenta](https://huggingface.co/datasets/zloelias/lenta-ru)                 | 100K    |
+| [miracl_ru](https://huggingface.co/datasets/Shitao/bge-m3-data)             | 10K     |
+| [mldr_ru](https://huggingface.co/datasets/Shitao/bge-m3-data)               | 1.8K      |
+| [mmarco_ru](https://huggingface.co/datasets/unicamp-dl/mmarco)        | 500K    |
+| [mr-tydi_ru](https://huggingface.co/datasets/Shitao/bge-m3-data)            | 5.3K      |
+| [ru-HNP](https://huggingface.co/datasets/deepvk/ru-HNP)                | 100K    |
+| ru-queries            | 199K    |
+| [ru-WaNLI](https://huggingface.co/datasets/deepvk/ru-WANLI)     | 35K     |
+| [sampled_wiki](https://huggingface.co/datasets/wikimedia/wikipedia)          | 1M  |
+| [summ_dialog_news](https://huggingface.co/datasets/CarlBrendt/Summ_Dialog_News)      | 37K     |
+| [wikiomnia_qna](https://huggingface.co/datasets/RussianNLP/wikiomnia)         | 100K    |
+| [yandex_q](https://huggingface.co/datasets/its5Q/yandex-q)              | 83K     |
+| **Total**                                                               |    4.3M        |
+
+## Citations
+
+```
+@misc{deepvk2025user,
+    title={USER2},
+    author={Malashenko, Boris and Spirin, Egor and Sokolov Andrey},
+    url={https://huggingface.co/datasets/deepvk/USER2-base},
+    publisher={Hugging Face}
+    year={2025},
+}
+```
