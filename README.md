@@ -161,10 +161,9 @@ similarities = query_embeddings @ doc_embeddings.T
 
 This is the small version with 35 million parameters based on RuModernBert-small. It was fine-tuned for three stages: RetroMAE, weakly supervised fine-tuning, supervised fine-tuning.
 
-Following the bge-m3 training strategy, we use RetroMAE as a retrieval-oriented continuous pretraining step. Leveraging data from the final stage of RuModernBERT training, RetroMAE enhances retrieval quality -- particularly for long-context inputs.
+Following the bge-m3 training strategy, we use RetroMAE as a retrieval-oriented continuous pretraining step. Leveraging data from the final stage of RuModernBERT training, RetroMAE enhances retrieval quality - particularly for long-context inputs.
 
-To follow best practices for building SOTA, we rely on large-scale training with weakly related text pairs. However, such datasets are not publicly available for Russian, unlike for English or Chinese. To overcome this, we apply two complementary strategies:
-As large-scale weakly supervised datasets are not publicly available for Russian, unlike for English or Chinese, we adopt two strategies:
+To follow best practices for building SOTA encoder, we rely on large-scale training with weakly related text pairs. However, such datasets are not publicly available for Russian, unlike for English or Chinese. To overcome this, we apply two complementary strategies:
 - **Cross-lingual transfer**: We train on both English and Russian data, leveraging English resources (nomic-unsupervised) alongside our in-house English-Russian parallel corpora.
 - **Unsupervised pair mining**: From [deepvk/cultura_ru_edu](deepvk/cultura_ru_edu) corpus, we extract 50M pairs using a simple heuristic – selecting non-overlapping text blocks that are not substrings of one another.
 
