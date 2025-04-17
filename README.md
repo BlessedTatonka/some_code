@@ -7,6 +7,10 @@ This model is a part of the new **USER2** series – an evolution of the **USER*
 | `deepvk/USER2-small` | 35M        | 512        | 8192           |
 | [deepvk/USER2-base](https://huggingface.co/deepvk/RuModernBERT-base)  | 110M       | 768        | 8192           |
 
+This model also supports Matryoshka Representation Learning (MRL) — a technique that allows reducing embedding size with only a minimal drop in representation quality. It was trained with MRL dimensions `[32, 64, 128, 256, 384]`, which are therefore fully optimized for use.
+
+<img src="assets/MRL.png" alt="MRL" width="600"/>
+
 ## Perfomance
 
 To evaluate the model, we measure quality on the MTEB(rus) benchmark. Additionally, to measure long-context retrieval, we run russian subset MultiLongDocRetrieval task.
@@ -22,7 +26,7 @@ To evaluate the model, we measure quality on the MTEB(rus) benchmark. Additional
 | Reranking (2 tasks)                |       58.26 |      62.06 |     55.58 |       68.72 |
 | Retrieval (3 tasks)                |       61.87 |      66.90 |     56.14 |       73.63 |
 | STS (3 tasks)                      |       72.25 |      74.28 |     74.35 |       76.76 |
-| **Average (23 tasks)**             |       58.32 |      61.11 |     58.11 |       62.80 |
+| **Average (23 tasks)**             |       58.32 |      61.12 |     58.11 |       62.80 |
 
 **MLDR**
 
