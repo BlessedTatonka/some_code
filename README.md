@@ -1,3 +1,30 @@
+---
+library_name: sentence-transformers
+pipeline_tag: sentence-similarity
+tags:
+- sentence-transformers
+- feature-extraction
+- sentence-similarity
+license: apache-2.0
+datasets:
+- deepvk/ru-HNP
+- deepvk/ru-WANLI
+- deepvk/cultura_ru_ed
+- Shitao/bge-m3-data
+- CarlBrendt/Summ_Dialog_News
+- nomic‑ai/nomic‑embed‑supervised‑data
+- nyuuzyou/fishkinet‑posts
+- IlyaGusev/gazeta
+- its5Q/habr_qna
+- zloelias/lenta‑ru
+- unicamp‑dl/mmarco
+- wikimedia/wikipedia
+- RussianNLP/wikiomnia
+- its5Q/yandex‑q
+language:
+- ru
+---
+
 # USER2-small
 
 This model is a part of the new **USER2** series – an evolution of the **USER** family (**U**niversal **S**entence **E**ncoder for **R**ussian), designed for efficient and accurate sentence representation with long-context support (up to 8192 tokens). The models are built on top of the strong [RuModernBERT](https://huggingface.co/collections/deepvk/rumodernbert-67b5e82fbc707d7ed3857743) architecture and show significant performance improvements for a diversity of Russian tasks.
@@ -15,16 +42,17 @@ To evaluate the model, we measure quality on the MTEB(rus) benchmark. Additional
 
 **MTEB(rus)**
 
-| Task                               | USER2-small | USER2-base | USER-base | USER-bge-m3 |
-|-----------------------------------:|:-----------:|:----------:|:---------:|:-----------:|
-| Classification (9 tasks)           |       59.76 |      61.67 |     59.89 |       61.92 |
-| Clustering (3 tasks)               |       57.06 |      59.22 |     53.26 |       53.66 |
-| MultiLabelClassification (2 tasks) |       33.56 |      36.61 |     37.72 |       36.18 |
-| PairClassification (1 task)        |       54.02 |      56.39 |     59.76 |       65.07 |
-| Reranking (2 tasks)                |       58.26 |      62.06 |     55.58 |       68.72 |
-| Retrieval (3 tasks)                |       61.87 |      66.90 |     56.14 |       73.63 |
-| STS (3 tasks)                      |       72.25 |      74.28 |     74.35 |       76.76 |
-| **Average (23 tasks)**             |       58.32 |      61.12 |     58.11 |       62.80 |
+| Model                                                                                          | Size  | Hidden Dim | Context Length | MRL support | Mean(task) | Mean(taskType) | Classification | Clustering | MultiLabelClassification | PairClassification | Reranking | Retrieval | STS   |
+|:-----------------------------------------------------------------------------------------------|:-----:|:----------:|:--------------:|:-----------:|:----------:|:--------------:|:-------------:|:----------:|:------------------------:|:-----------------:|:---------:|:---------:|:-----:|
+| USER2-small                                                                                  | 35 M  | 384        | 8192           | ✅         | 58.32      | 56.68         | 59.76         | 57.06      | 33.56                   | 54.02             | 58.26     | 61.87     | 72.25 |
+| USER2-base                                                                                     | 150 M | 768        | 8192           | ✅         | 61.12      | 59.59         | 61.67         | 59.22      | 36.61                   | 56.39             | 62.06     | 66.90     | 74.28 |
+| USER-base                                                                                      | 124 M | 768        | 512            | ❌         | 58.11      | 56.67         | 59.89         | 53.26      | 37.72                   | 59.76             | 55.58     | 56.14     | 74.35 |
+| USER-bge-m3                                                                                    | 359 M | 1024       | 8192           | ❌         | 62.80      | 62.28         | 61.92         | 53.66      | 36.18                   | 65.07             | 68.72     | 73.63     | 76.76 |
+| multilingual-e5-base                                                                           | 278 M | 768        | 512            | ❌         | 58.34      | 57.24         | 58.25         | 50.27      | 33.65                   | 54.98             | 66.24     | 67.14     | 70.16 |
+| multilingual-e5-large-instruct                                                                  | 560 M | 1024       | 512            | ❌         | 65.00      | 63.36      | 66.28                   | 63.13             | 41.15     | 63.89     | 64.35 | 68.23 |  76.48 | 
+| jina-embeddings-v3                                                                             | 572 M | 1024       | 8192           | ✅         | 63.45         | 60.93      | 65.24                   | 60.90             | 39.24     | 59.22     | 53.86 | 71.99 | 76.04 |
+| ru-en-RoSBERTa                                                                                 | 404 M | 1024       | 512            | ❌         | 61.71         | 60.40      | 62.56                   | 56.06             | 38.88     | 60.79     | 63.89 | 66.52 | 74.13 | 
+```
 
 **MLDR**
 
@@ -46,12 +74,6 @@ To evaluate MRL capabilities, we again use MTEB(rus), this time by cropping the 
 <img src="assets/MRL_base.png" alt="MRL" width="600"/>
 
 ## Usage
-
-You can use these models directly with the latest transformers release and requires installing `transformers>=4.48.0`:
-
-```bash
-pip install transformers>=4.48.0
-```
 
 ### Prefixes
 
@@ -80,14 +102,7 @@ similarities = model.similarity(query_embeddings, document_embeddings)
 In Sentence Transformers, you can reduce the embedding dimensionality using the **truncate_dim** parameter when loading the SentenceTransformer model. This model was trained with dimensions `[32, 64, 128, 256, 384]`, so it’s recommended to use one of these for best performance.
 
 ```python
-from sentence_transformers import SentenceTransformer
-
 model = SentenceTransformer("deepvk/USER2-small", truncate_dim=128)
-
-query_embeddings = model.encode(["Когда был спущен на воду первый миноносец «Спокойный»?"], prompt_name="search_query")
-document_embeddings = model.encode(["Спокойный (эсминец)\nЗачислен в списки ВМФ СССР 19 августа 1952 года."], prompt_name="search_document")
-
-similarities = model.similarity(query_embeddings, document_embeddings)
 ```
 
 </details>
@@ -134,43 +149,11 @@ similarities = query_embeddings @ doc_embeddings.T
 <details><summary>Transformers usage with MRL</summary>
 
 ```python
-import torch
-import torch.nn.functional as F
-from transformers import AutoTokenizer, AutoModel
-
-
-def mean_pooling(model_output, attention_mask):
-    token_embeddings = model_output[0]
-    input_mask_expanded = (
-        attention_mask.unsqueeze(-1).expand(token_embeddings.size()).float()
-    )
-    return torch.sum(token_embeddings * input_mask_expanded, 1) / torch.clamp(
-        input_mask_expanded.sum(1), min=1e-9
-    )
-
-
-queries = ["search_query: Когда был спущен на воду первый миноносец «Спокойный»?"]
-documents = ["search_document: Спокойный (эсминец)\nЗачислен в списки ВМФ СССР 19 августа 1952 года."]
-
-tokenizer = AutoTokenizer.from_pretrained("deepvk/USER2-small")
-model = AutoModel.from_pretrained("deepvk/USER2-small")
-truncate_dim = 128
-
-encoded_queries = tokenizer(queries, padding=True, truncation=True, return_tensors="pt")
-encoded_documents = tokenizer(documents, padding=True, truncation=True, return_tensors="pt")
-
-with torch.no_grad():
-    queries_outputs = model(**encoded_queries)
-    documents_outputs = model(**encoded_documents)
 
 query_embeddings = mean_pooling(queries_outputs, encoded_queries["attention_mask"])
 query_embeddings = query_embeddings[:, :truncate_dim]
 query_embeddings = F.normalize(query_embeddings, p=2, dim=1)
-doc_embeddings = mean_pooling(documents_outputs, encoded_documents["attention_mask"])
-doc_embeddings = doc_embeddings[:, :truncate_dim]
-doc_embeddings = F.normalize(doc_embeddings, p=2, dim=1)
-
-similarities = query_embeddings @ doc_embeddings.T
+# and the same for doc_embeddings
 ```
 </details>
 
@@ -196,26 +179,31 @@ This approach shows promising results, as we were able to train strong-performin
 
 For the third stage, we switch to cleaner, task-specific datasets. In some cases, we applied additional filtering using a cross-encoder. For all retrieval datasets we mine hard-negatives. 
 
-| Dataset               | Examples   |
-|----------------------:|:----------:|
-| [Nomic-en-supervised](https://huggingface.co/datasets/nomic-ai/nomic-embed-supervised-data) | 1.7M |
-| AllNLI                | 200K    |
-| [fishkinet-posts](https://huggingface.co/datasets/nyuuzyou/fishkinet-posts)                | 93K     |
-| [gazeta](https://huggingface.co/datasets/IlyaGusev/gazeta)                | 55K     |
-| [habr_qna](https://huggingface.co/datasets/its5Q/habr_qna)              | 100K    |
-| [lenta](https://huggingface.co/datasets/zloelias/lenta-ru)                 | 100K    |
-| [miracl_ru](https://huggingface.co/datasets/Shitao/bge-m3-data)             | 10K     |
-| [mldr_ru](https://huggingface.co/datasets/Shitao/bge-m3-data)               | 1.8K      |
-| [mmarco_ru](https://huggingface.co/datasets/unicamp-dl/mmarco)        | 500K    |
-| [mr-tydi_ru](https://huggingface.co/datasets/Shitao/bge-m3-data)            | 5.3K      |
-| [ru-HNP](https://huggingface.co/datasets/deepvk/ru-HNP)                | 100K    |
-| ru-queries            | 199K    |
-| [ru-WaNLI](https://huggingface.co/datasets/deepvk/ru-WANLI)     | 35K     |
-| [sampled_wiki](https://huggingface.co/datasets/wikimedia/wikipedia)          | 1M  |
-| [summ_dialog_news](https://huggingface.co/datasets/CarlBrendt/Summ_Dialog_News)      | 37K     |
-| [wikiomnia_qna](https://huggingface.co/datasets/RussianNLP/wikiomnia)         | 100K    |
-| [yandex_q](https://huggingface.co/datasets/its5Q/yandex-q)              | 83K     |
-| **Total**                                                               |    4.3M        |
+| Dataset                                                                                                                                          | Examples | Notes                                     |
+|:-------------------------------------------------------------------------------------------------------------------------------------------------|:--------:|:------------------------------------------|
+| [Nomic-en-supervised](https://huggingface.co/datasets/nomic-ai/nomic-embed-supervised-data)                                                     | 1.7 M    | Unmodified                                |
+| AllNLI                                                                                                                                            | 200 K    | Translated SNLI/MNLI/ANLI to Russian      |
+| [fishkinet-posts](https://huggingface.co/datasets/nyuuzyou/fishkinet-posts)                                                                       | 93 K     | Title–content pairs                       |
+| [gazeta](https://huggingface.co/datasets/IlyaGusev/gazeta)                                                                                        | 55 K     | Title–text pairs                          |
+| [habr_qna](https://huggingface.co/datasets/its5Q/habr_qna)                                                                                        | 100 K    | Title–description pairs                   |
+| [lenta](https://huggingface.co/datasets/zloelias/lenta-ru)                                                                                        | 100 K    | Title–news pairs                          |
+| [miracl_ru](https://huggingface.co/datasets/Shitao/bge-m3-data)                                                                                   | 10 K     | One positive per anchor                   |
+| [mldr_ru](https://huggingface.co/datasets/Shitao/bge-m3-data)                                                                                     | 1.8 K    | Unmodified                                |
+| [mr-tydi_ru](https://huggingface.co/datasets/Shitao/bge-m3-data)                                                                                  | 5.3 K    | Unmodified                                |
+| [mmarco_ru](https://huggingface.co/datasets/unicamp-dl/mmarco)                                                                                    | 500 K    | Unmodified                       |
+| [ru-HNP](https://huggingface.co/datasets/deepvk/ru-HNP)                                                                                           | 100 K    | One pos + one neg per anchor              |
+| ru‑queries                                                                                                                                         | 199 K    | In-house (generated as in [arXiv:2401.00368](https://arxiv.org/abs/2401.00368)) |
+| [ru‑WaNLI](https://huggingface.co/datasets/deepvk/ru-WANLI)                                                                                        | 35 K     | Entailment -> pos, contradiction ->neg         |
+| [sampled_wiki](https://huggingface.co/datasets/wikimedia/wikipedia)                                                                                | 1 M      | Sampled text blocks from Wikipedia        |
+| [summ_dialog_news](https://huggingface.co/datasets/CarlBrendt/Summ_Dialog_News)                                                                    | 37 K     | Summary–info pairs                        |
+| [wikiomnia_qna](https://huggingface.co/datasets/RussianNLP/wikiomnia)                                                                              | 100 K    | QA pairs (T5-generated)                  |
+| [yandex_q](https://huggingface.co/datasets/its5Q/yandex-q)                                                                                         | 83 K     | Q+desc-answer pairs                     |
+| **Total**                                                                                                                                        | 4.3 M    |                                           |
+
+Alongside the final model, we’ve also released all intermediate training steps. Both the **retromae** and **weakly_sft** models are available under the specified revisions in this repository. We hope these additional models prove useful for your experiments.
+
+
+
 
 ## Citations
 
