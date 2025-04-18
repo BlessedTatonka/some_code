@@ -24,7 +24,7 @@ To evaluate the model, we measure quality on the MTEB(rus) benchmark. Additional
 | Reranking (2 tasks)                |       58.11 |      61.97 |     55.58 |       68.72 |
 | Retrieval (3 tasks)                |       61.74 |      66.98 |     56.14 |       73.63 |
 | STS (3 tasks)                      |       72.21 |      74.23 |     74.35 |       76.76 |
-| **Average (23 tasks)**             |       58.15 |      61.06 |     58.11 |       62.80 |
+| **Average (23 tasks)**             |       58.15 |      61.07 |     58.11 |       62.80 |
 
 
 **MLDR**
