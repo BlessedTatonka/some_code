@@ -17,14 +17,15 @@ To evaluate the model, we measure quality on the MTEB(rus) benchmark. Additional
 
 | Task                               | USER2-small | USER2-base | USER-base | USER-bge-m3 |
 |-----------------------------------:|:-----------:|:----------:|:---------:|:-----------:|
-| Classification (9 tasks)           |       59.76 |      61.67 |     59.89 |       61.92 |
-| Clustering (3 tasks)               |       57.06 |      59.22 |     53.26 |       53.66 |
-| MultiLabelClassification (2 tasks) |       33.56 |      36.61 |     37.72 |       36.18 |
-| PairClassification (1 task)        |       54.02 |      56.39 |     59.76 |       65.07 |
-| Reranking (2 tasks)                |       58.26 |      62.06 |     55.58 |       68.72 |
-| Retrieval (3 tasks)                |       61.87 |      66.90 |     56.14 |       73.63 |
-| STS (3 tasks)                      |       72.25 |      74.28 |     74.35 |       76.76 |
-| **Average (23 tasks)**             |       58.32 |      61.12 |     58.11 |       62.80 |
+| Classification (9 tasks)           |       59.75 |      61.66 |     59.89 |       61.92 |
+| Clustering (3 tasks)               |       56.29 |      59.13 |     53.26 |       53.66 |
+| MultiLabelClassification (2 tasks) |       33.09 |      36.43 |     37.72 |       36.18 |
+| PairClassification (1 task)        |       54.03 |      56.32 |     59.76 |       65.07 |
+| Reranking (2 tasks)                |       58.11 |      61.97 |     55.58 |       68.72 |
+| Retrieval (3 tasks)                |       61.74 |      66.98 |     56.14 |       73.63 |
+| STS (3 tasks)                      |       72.21 |      74.23 |     74.35 |       76.76 |
+| **Average (23 tasks)**             |       58.15 |      61.12 |     58.11 |       62.80 |
+
 
 **MLDR**
 
