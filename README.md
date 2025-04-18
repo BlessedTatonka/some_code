@@ -52,7 +52,7 @@ To evaluate the model, we measure quality on the MTEB(rus) benchmark. Additional
 | multilingual-e5-large-instruct                                                                  | 560 M | 1024       | 512            | ❌         | 65.00      | 63.36      | 66.28                   | 63.13             | 41.15     | 63.89     | 64.35 | 68.23 |  76.48 | 
 | jina-embeddings-v3                                                                             | 572 M | 1024       | 8192           | ✅         | 63.45         | 60.93      | 65.24                   | 60.90             | 39.24     | 59.22     | 53.86 | 71.99 | 76.04 |
 | ru-en-RoSBERTa                                                                                 | 404 M | 1024       | 512            | ❌         | 61.71         | 60.40      | 62.56                   | 56.06             | 38.88     | 60.79     | 63.89 | 66.52 | 74.13 | 
-```
+
 
 **MLDR**
 
