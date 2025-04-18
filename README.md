@@ -44,7 +44,7 @@ In addition to the nDCG@10 score, we report the time required to encode the corp
 
 To evaluate MRL capabilities, we again use MTEB(rus), this time by cropping the embedding dimensions to the chosen size.
 
-<img src="assets/MRL.png" alt="MRL" width="600"/>
+<img src="assets/MRL_fixed_tok.png" alt="MRL" width="600"/>
 
 ## Usage
 
