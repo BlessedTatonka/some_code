@@ -200,7 +200,9 @@ For the third stage, we switch to cleaner, task-specific datasets. In some cases
 | [yandex_q](https://huggingface.co/datasets/its5Q/yandex-q)                                                                                         | 83 K     | Q+desc-answer pairs                     |
 | **Total**                                                                                                                                        | 4.3 M    |                                           |
 
-Alongside the final model, we’ve also released all intermediate training steps. Both the **retromae** and **weakly_sft** models are available under the specified revisions in this repository. We hope these additional models prove useful for your experiments.
+Alongside the final model, we also release all intermediate training steps. Both the **retromae** and **weakly_sft** models are available under the specified revisions in this repository. We hope these additional models prove useful for your experiments. Below is a comparison of all training stages on a subset of MTEB(rus).
+
+<img src="assets/training_stages.png" alt="MRL" width="600"/>
 
 
 
