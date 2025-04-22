@@ -120,6 +120,8 @@ def main():
         model, scale=50, mini_batch_size=model_args.mini_batch_size  # opposite to temperature, which should be 0.02
     )
 
+    model_hidden_size = model.get_sentence_embedding_dimension()
+    
     MRL_DIMS = None
     MRL_WEIGHTS = None
     
@@ -130,11 +132,11 @@ def main():
         MRL_DIMS = [32, 64, 128, 256, 384, 512, model_hidden_size]
         # MRL_WEIGHTS = [0.1, 0.1, 0.2, 0.3, 1.0]
     elif model_hidden_size <= 1152:
-        MRL_DIMS = [64, 128, 256, 512, model_hidden_size]:
+        MRL_DIMS = [64, 128, 256, 512, model_hidden_size]
         MRL_WEIGHTS = [0.1, 0.1, 0.2, 0.3, 1.0]
 
-    print("Set MRL dimensions to: {MRL_DIMS}")
-    print("Set MRL weights to: {MRL_WEIGHTS}")
+    print(f"Set MRL dimensions to: {MRL_DIMS}")
+    print(f"Set MRL weights to: {MRL_WEIGHTS}")
     
     train_loss = losses.MatryoshkaLoss(
         model, 
