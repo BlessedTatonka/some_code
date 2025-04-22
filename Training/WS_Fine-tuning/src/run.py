@@ -109,18 +109,20 @@ def main():
     training_args.multi_dataset_batch_sampler = MultiDatasetBatchSamplers.PROPORTIONAL
     training_args.batch_sampler = BatchSamplers.NO_DUPLICATES
 
-    # if use_instructions:
-    #     with open(data_args.instructions_path, "r") as file:
-    #         prompts = yaml.safe_load(file)
-    #         # print(prompts)
-    #     training_args.prompts = prompts
+    if use_instructions:
+        with open(data_args.instructions_path, "r") as file:
+            prompts = yaml.safe_load(file)
+            # print(prompts)
+        training_args.prompts = prompts
 
     # Loss
     base_loss = losses.CachedMultipleNegativesRankingLoss(
         model, scale=50, mini_batch_size=model_args.mini_batch_size  # opposite to temperature, which should be 0.02
     )
 
-    train_loss = losses.MatryoshkaLoss(model, base_loss, [384, 256, 128, 64, 32])
+    MRL_DIMS = ###
+    
+    train_loss = losses.MatryoshkaLoss(model, base_loss, MRL_DIMS)
 
     # Trainer
     trainer = SentenceTransformerTrainer(
