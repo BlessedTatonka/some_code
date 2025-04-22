@@ -110,8 +110,31 @@ def main():
         guide=guide_model,
         mini_batch_size=model_args.mini_batch_size
     )
+
+    model_hidden_size = model.get_sentence_embedding_dimension()
+
+    MRL_DIMS = None
+    MRL_WEIGHTS = None
     
-    train_loss = losses.MatryoshkaLoss(model, base_loss, [384, 256, 128, 64, 32])
+    if model_hidden_size <= 384:
+        MRL_DIMS = [32, 64, 128, 256, model_hidden_size]
+        # MRL_WEIGHTS = [0.1, 0.1, 0.2, 0.3, 1.0]
+    elif model_hidden_size <= 768:
+        MRL_DIMS = [32, 64, 128, 256, 384, 512, model_hidden_size]
+        # MRL_WEIGHTS = [0.1, 0.1, 0.2, 0.3, 1.0]
+    elif model_hidden_size <= 1152:
+        MRL_DIMS = [64, 128, 256, 512, model_hidden_size]:
+        MRL_WEIGHTS = [0.1, 0.1, 0.2, 0.3, 1.0]
+
+    print("Set MRL dimensions to: {MRL_DIMS}")
+    print("Set MRL weights to: {MRL_WEIGHTS}")
+    
+    train_loss = losses.MatryoshkaLoss(
+        model, 
+        base_loss, 
+        matryoshka_dims=MRL_DIMS,
+        matryoshka_weights=MRL_WEIGHTS
+    )
 
     # Trainer
     trainer = SentenceTransformerTrainer(
